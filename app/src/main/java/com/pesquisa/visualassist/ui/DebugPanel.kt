@@ -26,7 +26,7 @@ import com.pesquisa.visualassist.vision.DebugFrameState
  * @param onClose chamado quando o usuário toca em "Fechar app".
  */
 @Composable
-fun DebugPanel(onClose: () -> Unit = {}) {
+fun DebugPanel(onReadText: () -> Unit = {}, onClose: () -> Unit = {}) {
   val frame = DebugFrameState.annotated
   Column(
     modifier = Modifier.fillMaxSize().background(Color(0xCC000000)).padding(8.dp),
@@ -44,6 +44,9 @@ fun DebugPanel(onClose: () -> Unit = {}) {
       } else {
         Text("Aguardando câmera...", color = Color.White)
       }
+    }
+    Button(onClick = onReadText, modifier = Modifier.fillMaxWidth()) {
+      Text("Ler texto")
     }
     Button(onClick = onClose, modifier = Modifier.fillMaxWidth()) {
       Text("Fechar app")

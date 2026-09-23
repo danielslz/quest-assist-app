@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-09-23
+Última atualização: 2026-09-23 (OCR sob demanda)
 
 ---
 
@@ -118,7 +118,13 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 - `audio/SpeechEngine.kt` — interface que desacopla o motor de TTS (permite mock
   em testes e troca de engine).
 
-### 3.4 Painel de debug com bounding boxes  ✅
+### 3.4 Leitura de texto / OCR  ✅
+- `vision/TextReader.kt` — OCR **sob demanda** com ML Kit Text Recognition (script
+  latino, pt/en). Acionado pelo botão "Ler texto" no painel: captura o último
+  frame, reconhece o texto e o lê por voz (prioridade alta). Anuncia "nenhum texto
+  detectado" quando vazio. Não roda no pipeline contínuo (é pontual).
+
+### 3.5 Painel de debug com bounding boxes  ✅
 - `ui/DebugPanel.kt` — painel Compose (Spatial SDK) que mostra a câmera com as
   caixas desenhadas + botão "Fechar app".
 - `vision/OverlayRenderer.kt` — desenha boxes + rótulos (confiança %) no bitmap.
@@ -126,7 +132,7 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 - Observação: o preview atualiza na taxa da inferência (~0.8 FPS), então é
   "picotado" — é ferramenta de validação, não vídeo fluido.
 
-### 3.5 Ciclo de vida / plataforma  ✅
+### 3.6 Ciclo de vida / plataforma  ✅
 - `VisualAssistActivity.kt` — entrada; permissões com feedback por áudio;
   passthrough; painel; saída limpa (`finishApp`).
 - Manifest: hand tracking (sem controllers), passthrough, `passthrough-contextual`
@@ -145,7 +151,7 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | Toolchain | JDK 17, NDK 27.0.12077973 | — | Android + nativo |
 | Câmera | Passthrough Camera API (Camera2) | — | frames RGB frontais |
 | Detecção objetos | MediaPipe Tasks Vision | 1.0.0 | EfficientDet-Lite0 |
-| OCR (roadmap) | ML Kit Text Recognition | 16.0.1 | leitura de texto |
+| OCR | ML Kit Text Recognition | 16.0.1 | leitura de texto (sob demanda) |
 | TTS | sherpa-onnx (VITS/Piper pt-BR) | 1.13.8 | voz offline |
 | UI dos painéis | Jetpack Compose | BOM 2024.09 | painel de debug |
 | SDK Android | compile/target/min SDK | 34 / 34 / 34 | — |
@@ -178,7 +184,7 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | 5.1 | VisionPipeline | ✅ | inferência fora do render, throttle |
 | 5.2 | ObjectDetector (MediaPipe) | ✅ | objetos + direção + pt |
 | — | Painel de debug (boxes) | ✅ | validação visual |
-| 5.3 | **OCR (ML Kit)** | ⏳ | ler placas/letreiros sob demanda |
+| 5.3 | OCR (ML Kit) | ✅ | ler placas/letreiros sob demanda (botão) |
 | 5.4 | **Detecção de pessoas dedicada** | ⏳ | presença (sem identificação) |
 | 4.2 | **Áudio espacial (beep direcional)** | ⏳ | requer asset .wav mono 48kHz |
 | 6 | **Descrição de cena via cloud (LLM)** | ⏳ | opt-in; fallback offline; Ramalama p/ protótipo |

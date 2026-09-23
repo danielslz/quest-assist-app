@@ -14,6 +14,8 @@ Implementadas ✅
 - **Passthrough + câmera frontal** (Passthrough Camera API, 1280×960, intrínsecos da lente)
 - **Detecção de objetos** on-device (MediaPipe EfficientDet-Lite0) com posição
   relativa ("cadeira à sua esquerda") e rótulos em português
+- **Leitura de texto (OCR)** sob demanda (ML Kit) — botão "Ler texto" lê placas,
+  letreiros e rótulos por voz
 - **Voz offline em pt-BR** (sherpa-onnx VITS/Piper) — o Quest não tem TTS de sistema
 - **Fila de áudio inteligente**: prioridade, debounce, descarte de anúncios
   obsoletos (TTL) e seleção por relevância (não fala demais)
@@ -21,8 +23,8 @@ Implementadas ✅
 - **Hand tracking** (funciona sem controllers) · **100% offline** · sem persistir frames
 
 Planejadas ⏳
-- OCR (ler placas/letreiros), detecção de pessoas (presença), áudio espacial,
-  descrição de cena via LLM (opt-in), configurações. Ver roadmap em `docs/TECHNICAL.md`.
+- Detecção de pessoas (presença), áudio espacial, descrição de cena via LLM
+  (opt-in), configurações. Ver roadmap em `docs/TECHNICAL.md`.
 
 ## Documentação
 - **Técnica (arquitetura, tecnologias, roadmap)**: [`docs/TECHNICAL.md`](docs/TECHNICAL.md)

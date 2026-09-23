@@ -48,6 +48,11 @@ class VisualAssistActivity : AppSystemActivity() {
   private lateinit var audio: AudioFeedbackManager
   private lateinit var vision: VisionPipeline
   private lateinit var camera: CameraController
+  private val textReader = com.pesquisa.visualassist.vision.TextReader()
+
+  /** Último frame recebido, para OCR sob demanda (não persistido em disco). */
+  @Volatile private var lastFrame: CameraFrame? = null
+  @Volatile private var reading = false
 
   /** VRFeature é obrigatório para o AppSystemActivity inicializar o render de VR. */
   override fun registerFeatures(): List<SpatialFeature> {
@@ -109,7 +114,7 @@ class VisualAssistActivity : AppSystemActivity() {
     ComposeViewPanelRegistration(
       R.id.debug_panel,
       composeViewCreator = { _, ctx ->
-        ComposeView(ctx).apply { setContent { DebugPanel(onClose = { finishApp() }) } }
+        ComposeView(ctx).apply { setContent { DebugPanel(onReadText = { readText() }, onClose = { finishApp() }) } }
       },
       settingsCreator = {
         UIPanelSettings(
@@ -169,6 +174,7 @@ class VisualAssistActivity : AppSystemActivity() {
             yuv = YuvUtils.toNv21(image),
             intrinsics = camera.intrinsics,
           )
+          lastFrame = frame
           vision.submit(frame) { detections -> audio.report(detections) }
         } finally {
           finally()
@@ -176,6 +182,28 @@ class VisualAssistActivity : AppSystemActivity() {
       }
     })
     audio.announce("Câmera ativa.")
+  }
+
+  /** OCR sob demanda (Requisitos 3.1-3.3): lê o texto do último frame por voz. */
+  private fun readText() {
+    if (reading) return
+    val frame = lastFrame
+    if (frame == null) {
+      audio.announce("Câmera ainda não está pronta.")
+      return
+    }
+    reading = true
+    audio.announce("Lendo texto.")
+    val bitmap = YuvUtils.nv21ToBitmap(frame.yuv, frame.width, frame.height)
+    textReader.read(bitmap) { text ->
+      if (text.isBlank()) {
+        audio.announce("Nenhum texto detectado.")
+      } else {
+        // Texto reconhecido: fala com prioridade alta (ação explícita do usuário).
+        audio.announce(text)
+      }
+      reading = false
+    }
   }
 
   /** Encerra o app de forma limpa (botão do painel de debug). */
@@ -190,6 +218,7 @@ class VisualAssistActivity : AppSystemActivity() {
     camera.dispose()
     vision.stop()
     audio.shutdown()
+    textReader.close()
     appScope.cancel()
   }
 

@@ -42,8 +42,8 @@
     - Posição relativa (DirectionMapper); tradução COCO EN->PT; debounce por rótulo
     - VALIDADO no Quest: anuncia "cama à sua frente", "pessoa à sua direita", etc.
     - _Requisitos: 2.1, 2.3, 2.4_
-  - [ ] 5.3 `TextRecognizer` (OCR) com ML Kit, acionado sob demanda
-    - Leitura via TTS; mensagem quando não há texto; pt/en
+  - [x] 5.3 `TextReader` (OCR) com ML Kit, acionado sob demanda (botão do painel)
+    - Leitura via TTS (prioridade alta); "nenhum texto detectado" quando vazio; pt/en (latino)
     - _Requisitos: 3.1, 3.2, 3.3, 3.4_
   - [ ] 5.4 `PersonDetector` (presença via MediaPipe, sem identificação)
     - Anúncio de presença/posição; sem persistência de rostos
