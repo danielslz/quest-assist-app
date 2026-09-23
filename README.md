@@ -1,70 +1,67 @@
 # Assistente Visual — Meta Quest 3
 
 Aplicativo de realidade mista para **Meta Quest 3/3S** que auxilia pessoas com
-deficiência visual, usando as câmeras frontais (Passthrough Camera API) para
-executar visão computacional (detecção de objetos, OCR de placas/letreiros,
-detecção de presença de pessoas) e comunicar por **áudio** (TTS + áudio espacial).
+deficiência visual. Usa as câmeras frontais do headset (Passthrough Camera API)
+para executar visão computacional **on-device** e descrever o ambiente por
+**voz em português** (TTS offline).
 
-Projeto de pesquisa (Ciência da Computação). Construído com **Meta Spatial SDK**
-(Kotlin), ML **on-device** e caminho **cloud** opcional.
+Projeto de pesquisa (Ciência da Computação) · Autor: Daniel Lima
+Repositório: https://github.com/danielslz/quest-assist-app
 
-## Documentação (specs)
-- Requisitos: `.kiro/specs/visual-assist/requirements.md`
-- Design/arquitetura: `.kiro/specs/visual-assist/design.md`
-- Tarefas: `.kiro/specs/visual-assist/tasks.md`
-- Ambiente de dev: `.kiro/steering/environment.md`
+## Funcionalidades
 
-## Estrutura
-```
-app/src/main/
-  AndroidManifest.xml          permissões câmera/passthrough/áudio
-  java/com/pesquisa/visualassist/
-    VisualAssistActivity.kt    entrada (Spatial SDK), permissões
-    camera/CameraController.kt Passthrough Camera API (Camera2)
-    vision/                    pipeline + detectores (objeto/OCR/pessoa)
-    audio/AudioFeedbackManager.kt  TTS + fila/debounce
-  res/values/strings.xml
-  assets/models/               modelos ONNX/TFLite (não versionados)
-```
+Implementadas ✅
+- **Passthrough + câmera frontal** (Passthrough Camera API, 1280×960, intrínsecos da lente)
+- **Detecção de objetos** on-device (MediaPipe EfficientDet-Lite0) com posição
+  relativa ("cadeira à sua esquerda") e rótulos em português
+- **Voz offline em pt-BR** (sherpa-onnx VITS/Piper) — o Quest não tem TTS de sistema
+- **Fila de áudio inteligente**: prioridade, debounce, descarte de anúncios
+  obsoletos (TTL) e seleção por relevância (não fala demais)
+- **Painel de debug** com a câmera + bounding boxes e botão de fechar
+- **Hand tracking** (funciona sem controllers) · **100% offline** · sem persistir frames
 
-## Como buildar (no Aurora, via distrobox quest-dev)
-```bash
-distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:assembleDebug'
-```
-Deploy no headset (modo dev + USB autorizado):
-```bash
-distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:installDebug'
-```
+Planejadas ⏳
+- OCR (ler placas/letreiros), detecção de pessoas (presença), áudio espacial,
+  descrição de cena via LLM (opt-in), configurações. Ver roadmap em `docs/TECHNICAL.md`.
 
-## Preparar modelos (distrobox quest-ml)
-```bash
-distrobox enter quest-ml -- bash -lc 'source ~/Projetos/quest-ml/.venv/bin/activate && \
-  yolo export model=yolo11n.pt format=onnx'   # -> copie o .onnx para app/src/main/assets/models/
-```
-
-## TTS offline (voz do app) — OBRIGATÓRIO para o app falar
-O Meta Quest NÃO tem motor TTS do sistema. O app usa sherpa-onnx com um modelo
-VITS/Piper em português, que deve ser colocado em `app/src/main/assets/tts/`:
-1. Baixe um modelo pt_BR dos releases do sherpa-onnx, por exemplo:
-   `vits-piper-pt_BR-*.tar.bz2` de https://github.com/k2-fsa/sherpa-onnx/releases
-2. Extraia e copie para `app/src/main/assets/tts/`:
-   - `model.onnx` (renomeie o `.onnx` do modelo)
-   - `tokens.txt`
-   - `espeak-ng-data/` (pasta, se o modelo Piper usar)
-3. Rebuild + install. Sem esse modelo, o app roda mas não fala (log: "Falha ao inicializar TTS").
-
-> Os arquivos de modelo (.onnx/.tflite) não são versionados (ver .gitignore).
-
-## Privacidade
-- Imagens da câmera são tratadas como Device User Data (política Meta).
-- Nenhum frame é persistido por padrão; app funciona 100% offline no modo padrão.
-- O modo cloud (descrição de cena) é explícito, opcional e desativável.
-- Detecção de pessoas é apenas de PRESENÇA — sem identificação (LGPD).
-
-## Estado
-Esqueleto com stubs marcados por `TODO(task N)`. Siga `tasks.md` para implementar.
-```
+## Documentação
+- **Técnica (arquitetura, tecnologias, roadmap)**: [`docs/TECHNICAL.md`](docs/TECHNICAL.md)
+- Specs: [`.kiro/specs/visual-assist/`](.kiro/specs/visual-assist/) (requirements, design, tasks)
+- Ambiente/convenções/build: [`.kiro/steering/`](.kiro/steering/)
 
 ## Requisitos de runtime
 - Meta Quest 3 / 3S com Horizon OS **v74+** (Passthrough Camera API)
-- Conta de desenvolvedor Meta + modo desenvolvedor ativo
+- Conta de desenvolvedor Meta + modo desenvolvedor ativo no headset
+
+## Ambiente de desenvolvimento (Aurora/uBlue imutável)
+Toolchain vive em distroboxes (nada instalado no host imutável):
+- `quest-dev` (Ubuntu 24.04): JDK 17, Android SDK/NDK 27, Gradle, Spatial Editor CLI
+- `quest-ml` (Ubuntu 24.04 + GPU): conversão/teste de modelos
+
+## Como buildar e implantar
+```bash
+# Build debug (APK)
+distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:assembleDebug'
+
+# Deploy no Quest (modo dev + USB autorizado)
+distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:installDebug'
+
+# Testes unitários
+distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:testDebugUnitTest'
+```
+`adb` roda no host; verifique o headset com `adb devices`.
+
+## Modelos (não versionados — baixar)
+- **TTS pt-BR** → `app/src/main/assets/tts/` (model.onnx, tokens.txt, espeak-ng-data/):
+  baixe `vits-piper-pt_BR-*` dos releases do sherpa-onnx. Sem ele o app não fala.
+- **Detecção de objetos** → `app/src/main/assets/models/efficientdet_lite0.tflite`:
+  baixe do MediaPipe (object_detector/efficientdet_lite0).
+
+## Privacidade
+Imagens da câmera não são persistidas; app funciona offline por padrão; detecção
+de pessoas será apenas de presença (sem identificação) — conforme LGPD e política
+de dados da Meta.
+
+## Estado
+Núcleo funcional validado no Quest 3: câmera → detecção → voz. Detalhes e
+próximos passos em `docs/TECHNICAL.md`.
