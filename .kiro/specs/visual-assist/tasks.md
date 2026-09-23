@@ -35,12 +35,12 @@
     - _Requisitos: 5.4_
 
 - [ ] 5. Pipeline de visão (on-device)
-  - [ ] 5.1 Definir `VisionDetector`, `CameraFrame`, `Detection` e `VisionPipeline`
-    - Inferência em coroutine separada do render
+  - [x] 5.1 Definir `VisionDetector`, `CameraFrame`, `Detection` e `VisionPipeline`
+    - Inferência em coroutine separada do render (drop de frames antigos, sem busy-loop)
     - _Requisitos: 2.2_
-  - [ ] 5.2 `ObjectDetector` com MediaPipe/ONNX Runtime + modelo em assets
-    - Cálculo de posição relativa (esquerda/centro/direita, perto/longe)
-    - Anúncio por áudio com debounce
+  - [x] 5.2 `ObjectDetector` com MediaPipe (EfficientDet-Lite0) + modelo em assets
+    - Posição relativa (DirectionMapper); tradução COCO EN->PT; debounce por rótulo
+    - VALIDADO no Quest: anuncia "cama à sua frente", "pessoa à sua direita", etc.
     - _Requisitos: 2.1, 2.3, 2.4_
   - [ ] 5.3 `TextRecognizer` (OCR) com ML Kit, acionado sob demanda
     - Leitura via TTS; mensagem quando não há texto; pt/en

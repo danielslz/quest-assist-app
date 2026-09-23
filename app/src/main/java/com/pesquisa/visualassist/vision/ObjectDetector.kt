@@ -65,6 +65,7 @@ class ObjectDetector(
         )
       )
     }
+    if (out.isNotEmpty()) Log.i(TAG, "detectou: ${out.joinToString { it.label }}")
     return out
   }
 

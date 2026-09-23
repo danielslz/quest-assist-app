@@ -27,14 +27,24 @@ class AnnouncementQueueTest {
     val clock = FakeClock(0L)
     val q = AnnouncementQueue(debounceMs = 3000L, clock = { clock.now })
 
-    assertTrue(q.offer(Announcement("cadeira à sua frente", dedupeKey = "cadeira")))
-    assertEquals("cadeira à sua frente", q.poll()?.text) // registra debounce em t=0
+    assertTrue(q.offer(Announcement("cadeira à sua frente", dedupeKey = "cadeira"))) // t=0 registra
+    assertEquals("cadeira à sua frente", q.poll()?.text)
 
     clock.now = 1000L
     assertFalse(q.offer(Announcement("cadeira à sua frente", dedupeKey = "cadeira"))) // dentro da janela
 
     clock.now = 3500L
     assertTrue(q.offer(Announcement("cadeira à sua frente", dedupeKey = "cadeira"))) // fora da janela
+  }
+
+  @Test
+  fun doesNotEnqueueDuplicatePendingLabel() {
+    // Sem poll entre os offers: o segundo "notebook" deve ser rejeitado
+    // (evita encher a fila com o mesmo rótulo repetido a cada frame).
+    val q = AnnouncementQueue()
+    assertTrue(q.offer(Announcement("notebook à sua frente", dedupeKey = "notebook")))
+    assertFalse(q.offer(Announcement("notebook à sua frente", dedupeKey = "notebook")))
+    assertEquals(1, q.size())
   }
 
   @Test

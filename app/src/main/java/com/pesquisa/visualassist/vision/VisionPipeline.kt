@@ -47,7 +47,8 @@ class VisionPipeline(
       while (running) {
         val frame = latestFrame.getAndSet(null)
         if (frame == null) {
-          continue // sem frame novo
+          kotlinx.coroutines.delay(15) // evita busy-loop; ~66Hz de checagem
+          continue
         }
         val all = detectors.flatMap { runCatching { it.detect(frame) }.getOrDefault(emptyList()) }
         if (all.isNotEmpty()) onResult(all)

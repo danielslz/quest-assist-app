@@ -34,9 +34,10 @@ data class Announcement(
 class AnnouncementQueue(
   private val debounceMs: Long = 3000L,
   private val clock: () -> Long = { System.currentTimeMillis() },
+  private val maxQueue: Int = 8,
 ) {
   private val pending = ArrayDeque<Announcement>()
-  private val lastSpokenAt = HashMap<String, Long>()
+  private val lastSeenAt = HashMap<String, Long>()
   private var verbosity: Verbosity = Verbosity.NORMAL
   private var seq = 0L
   // (seq para ordenação estável por prioridade)
@@ -50,9 +51,16 @@ class AnnouncementQueue(
 
     val key = a.dedupeKey
     if (key != null) {
-      val last = lastSpokenAt[key]
+      // Debounce: bloqueia se o mesmo rótulo foi enfileirado/falado há pouco.
+      val last = lastSeenAt[key]
       if (last != null && clock() - last < debounceMs) return false
+      // Evita também ter o mesmo rótulo duplicado aguardando na fila.
+      if (pending.any { it.dedupeKey == key }) return false
+      lastSeenAt[key] = clock()
     }
+
+    // Salvaguarda contra crescimento descontrolado da fila.
+    if (pending.size >= maxQueue) return false
 
     order[a] = seq++
     // Inserção mantendo prioridade (HIGH no início da sua faixa).
@@ -61,11 +69,12 @@ class AnnouncementQueue(
     return true
   }
 
-  /** Retira o próximo anúncio a falar, registrando o debounce. */
+  /** Retira o próximo anúncio a falar. */
   fun poll(): Announcement? {
     val a = pending.removeFirstOrNull() ?: return null
     order.remove(a)
-    a.dedupeKey?.let { lastSpokenAt[it] = clock() }
+    // Atualiza o instante para manter o debounce após a fala.
+    a.dedupeKey?.let { lastSeenAt[it] = clock() }
     return a
   }
 
