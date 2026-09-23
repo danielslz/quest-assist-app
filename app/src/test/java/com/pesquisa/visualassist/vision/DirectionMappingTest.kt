@@ -3,33 +3,36 @@ package com.pesquisa.visualassist.vision
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * Testes da lógica pura (sem Android): direção a partir da bounding box.
- * Requisitos: 2.3
- *
- * NOTA: a função de mapeamento box->Direction será extraída para uma classe
- * utilitária testável na task 5.2. Este teste documenta o comportamento esperado.
- */
+/** Testes da lógica pura de direção (DirectionMapper). Requisito 2.3. */
 class DirectionMappingTest {
-
-  private fun directionFromCenterX(centerX: Float): Direction = when {
-    centerX < 0.33f -> Direction.LEFT
-    centerX > 0.66f -> Direction.RIGHT
-    else -> Direction.CENTER
-  }
 
   @Test
   fun objectOnLeft_isLeft() {
-    assertEquals(Direction.LEFT, directionFromCenterX(0.1f))
+    assertEquals(Direction.LEFT, DirectionMapper.fromCenterX(0.1f))
   }
 
   @Test
   fun objectInCenter_isCenter() {
-    assertEquals(Direction.CENTER, directionFromCenterX(0.5f))
+    assertEquals(Direction.CENTER, DirectionMapper.fromCenterX(0.5f))
   }
 
   @Test
   fun objectOnRight_isRight() {
-    assertEquals(Direction.RIGHT, directionFromCenterX(0.9f))
+    assertEquals(Direction.RIGHT, DirectionMapper.fromCenterX(0.9f))
+  }
+
+  @Test
+  fun fromBox_usesCenterAndImageWidth() {
+    // box de 100 a 300 num frame de 1280 -> centro 200/1280 = 0.156 -> LEFT
+    assertEquals(Direction.LEFT, DirectionMapper.fromBox(100f, 300f, 1280))
+    // box central
+    assertEquals(Direction.CENTER, DirectionMapper.fromBox(560f, 720f, 1280))
+    // box à direita
+    assertEquals(Direction.RIGHT, DirectionMapper.fromBox(1000f, 1200f, 1280))
+  }
+
+  @Test
+  fun fromBox_zeroWidthIsCenter() {
+    assertEquals(Direction.CENTER, DirectionMapper.fromBox(10f, 20f, 0))
   }
 }

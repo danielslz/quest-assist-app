@@ -48,7 +48,8 @@ class VisualAssistActivity : AppSystemActivity() {
     audio = AudioFeedbackManager(SherpaTtsEngine(this))
     vision = VisionPipeline(this, appScope)
     camera = CameraController(this)
-    // TODO(tasks 5.2/5.3/5.4): vision.register(ObjectDetector(this)) etc.
+    // Detector de objetos on-device (Tarefa 5.2)
+    vision.register(com.pesquisa.visualassist.vision.ObjectDetector(this))
   }
 
   /**

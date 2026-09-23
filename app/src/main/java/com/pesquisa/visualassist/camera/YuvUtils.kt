@@ -1,6 +1,12 @@
 package com.pesquisa.visualassist.camera
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.media.Image
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 /** Utilitários para converter frames YUV_420_888 da câmera. */
@@ -52,5 +58,17 @@ object YuvUtils {
       }
     }
     return nv21
+  }
+
+  /**
+   * Converte bytes NV21 em [Bitmap] RGB (via JPEG intermediário).
+   * Usado para alimentar o MediaPipe (que requer Bitmap/MPImage).
+   */
+  fun nv21ToBitmap(nv21: ByteArray, width: Int, height: Int, jpegQuality: Int = 85): Bitmap {
+    val yuv = YuvImage(nv21, ImageFormat.NV21, width, height, null)
+    val out = ByteArrayOutputStream()
+    yuv.compressToJpeg(Rect(0, 0, width, height), jpegQuality, out)
+    val bytes = out.toByteArray()
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
   }
 }
