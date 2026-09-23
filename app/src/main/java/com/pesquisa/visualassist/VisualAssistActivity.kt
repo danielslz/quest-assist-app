@@ -4,16 +4,29 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.media.Image
 import android.os.Bundle
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
+import com.meta.spatial.compose.ComposeFeature
+import com.meta.spatial.compose.ComposeViewPanelRegistration
+import com.meta.spatial.core.Entity
+import com.meta.spatial.core.Pose
 import com.meta.spatial.core.SpatialFeature
 import com.meta.spatial.core.Vector3
 import com.meta.spatial.runtime.ReferenceSpace
 import com.meta.spatial.toolkit.AppSystemActivity
+import com.meta.spatial.toolkit.DpPerMeterDisplayOptions
+import com.meta.spatial.toolkit.Panel
+import com.meta.spatial.toolkit.PanelRegistration
+import com.meta.spatial.toolkit.PanelStyleOptions
+import com.meta.spatial.toolkit.QuadShapeOptions
+import com.meta.spatial.toolkit.Transform
+import com.meta.spatial.toolkit.UIPanelSettings
 import com.meta.spatial.vr.VRFeature
 import com.pesquisa.visualassist.audio.AudioFeedbackManager
 import com.pesquisa.visualassist.audio.SherpaTtsEngine
 import com.pesquisa.visualassist.camera.CameraController
 import com.pesquisa.visualassist.camera.YuvUtils
+import com.pesquisa.visualassist.ui.DebugPanel
 import com.pesquisa.visualassist.vision.CameraFrame
 import com.pesquisa.visualassist.vision.VisionPipeline
 import kotlinx.coroutines.CoroutineScope
@@ -38,8 +51,7 @@ class VisualAssistActivity : AppSystemActivity() {
 
   /** VRFeature é obrigatório para o AppSystemActivity inicializar o render de VR. */
   override fun registerFeatures(): List<SpatialFeature> {
-    android.util.Log.i("VisualAssist", "registerFeatures chamado")
-    return listOf(VRFeature(this))
+    return listOf(VRFeature(this), ComposeFeature())
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,8 +92,34 @@ class VisualAssistActivity : AppSystemActivity() {
 
     // Boas-vindas por áudio e fluxo de permissão.
     audio.announce("Assistente visual iniciado.")
+
+    // Painel de debug (Opção A): câmera + bounding boxes, ~2m à frente.
+    Entity.create(
+      listOf(
+        Panel(R.id.debug_panel),
+        Transform(Pose(Vector3(0f, 1.2f, 2f))),
+      )
+    )
+
     requestCameraPermissionThenStart()
   }
+
+  /** Painel de debug que exibe a câmera com as detecções (Opção A). */
+  override fun registerPanels(): List<PanelRegistration> = listOf(
+    ComposeViewPanelRegistration(
+      R.id.debug_panel,
+      composeViewCreator = { _, ctx ->
+        ComposeView(ctx).apply { setContent { DebugPanel() } }
+      },
+      settingsCreator = {
+        UIPanelSettings(
+          shape = QuadShapeOptions(width = 1.28f, height = 0.96f), // 4:3 como a câmera
+          style = PanelStyleOptions(themeResourceId = R.style.PanelAppThemeTransparent),
+          display = DpPerMeterDisplayOptions(),
+        )
+      },
+    ),
+  )
 
   /** Requisitos: 1.1, 1.2 — permissão com feedback por áudio. */
   private fun requestCameraPermissionThenStart() {

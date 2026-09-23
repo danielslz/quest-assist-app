@@ -19,6 +19,8 @@ class ObjectDetector(
   private val confidenceThreshold: Float = 0.5f,
   private val maxResults: Int = 5,
   private val modelAsset: String = "models/efficientdet_lite0.tflite",
+  /** Publica o frame anotado (câmera + boxes) no DebugFrameState para o painel. */
+  private val publishDebugFrame: Boolean = true,
 ) : VisionDetector {
 
   private var detector: MpObjectDetector? = null
@@ -66,6 +68,11 @@ class ObjectDetector(
       )
     }
     if (out.isNotEmpty()) Log.i(TAG, "detectou: ${out.joinToString { it.label }}")
+
+    // Publica o frame anotado para o painel de debug (Opção A).
+    if (publishDebugFrame) {
+      runCatching { DebugFrameState.update(OverlayRenderer.draw(bitmap, out)) }
+    }
     return out
   }
 
