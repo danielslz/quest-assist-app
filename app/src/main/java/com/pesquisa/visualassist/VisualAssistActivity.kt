@@ -109,7 +109,7 @@ class VisualAssistActivity : AppSystemActivity() {
     ComposeViewPanelRegistration(
       R.id.debug_panel,
       composeViewCreator = { _, ctx ->
-        ComposeView(ctx).apply { setContent { DebugPanel() } }
+        ComposeView(ctx).apply { setContent { DebugPanel(onClose = { finishApp() }) } }
       },
       settingsCreator = {
         UIPanelSettings(
@@ -176,6 +176,13 @@ class VisualAssistActivity : AppSystemActivity() {
       }
     })
     audio.announce("Câmera ativa.")
+  }
+
+  /** Encerra o app de forma limpa (botão do painel de debug). */
+  private fun finishApp() {
+    runCatching { camera.stop() }
+    runCatching { audio.announce("Encerrando.") }
+    finish()
   }
 
   override fun onDestroy() {
