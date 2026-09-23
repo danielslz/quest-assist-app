@@ -38,7 +38,7 @@ data class Announcement(
  * O tempo é injetado (clock) para testabilidade determinística.
  */
 class AnnouncementQueue(
-  private val debounceMs: Long = 8000L,
+  private val debounceMs: Long = 5000L,
   private val clock: () -> Long = { System.currentTimeMillis() },
   private val maxQueue: Int = 3,
 ) {

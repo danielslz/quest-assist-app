@@ -34,10 +34,27 @@ class AudioFeedbackManager(
     enqueue(Announcement(message, priority = priority, ttlMs = null))
   }
 
-  /** Converte detecções em anúncios com debounce por rótulo (Requisitos 2.3, 4.1). */
+  /** Converte detecções em anúncios, priorizando relevância (Requisitos 2.3, 4.1). */
   fun report(detections: List<Detection>) {
-    // Prioriza o objeto mais central/relevante quando há vários (fala menos, melhor).
-    for (d in detections.sortedByDescending { it.confidence }) {
+    if (detections.isEmpty()) return
+
+    // Relevância = combina confiança, proximidade (área da box) e centralidade.
+    fun relevance(d: Detection): Float {
+      val w = (d.box[2] - d.box[0]).coerceAtLeast(0f)
+      val h = (d.box[3] - d.box[1]).coerceAtLeast(0f)
+      val area = w * h // 0..1: objetos maiores/mais próximos pesam mais
+      val cx = (d.box[0] + d.box[2]) / 2f
+      val centrality = 1f - (kotlin.math.abs(cx - 0.5f) * 2f) // 1 no centro, 0 nas bordas
+      return d.confidence * 0.5f + area * 0.3f + centrality * 0.2f
+    }
+
+    // Pessoas são sempre relevantes (segurança/social); depois, os objetos mais relevantes.
+    val people = detections.filter { it.kind == Detection.Kind.PERSON }
+    val objects = detections.filter { it.kind != Detection.Kind.PERSON }
+      .sortedByDescending { relevance(it) }
+      .take(1) // no máximo 1 objeto por ciclo (fala menos)
+
+    (people + objects).forEach { d ->
       enqueue(
         Announcement(
           text = phraseFor(d),
@@ -45,7 +62,7 @@ class AudioFeedbackManager(
           direction = d.direction.toAudioDirection(),
           dedupeKey = d.label,
           minVerbosity = if (d.kind == Detection.Kind.OBJECT) Verbosity.NORMAL else Verbosity.MINIMAL,
-          ttlMs = 2500L, // detecção obsoleta após 2.5s não é mais falada
+          ttlMs = 1800L, // menor atraso: detecção obsoleta após 1.8s não é falada
         )
       )
     }

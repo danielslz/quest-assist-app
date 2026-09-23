@@ -26,7 +26,7 @@ class VisionPipeline(
   private val context: Context,
   private val scope: CoroutineScope,
   /** Intervalo mínimo entre inferências (ms). Evita saturar a fila de áudio. */
-  private val minInferenceIntervalMs: Long = 700L,
+  private val minInferenceIntervalMs: Long = 1200L,
 ) {
   private val detectors = mutableListOf<VisionDetector>()
   private val latestFrame = AtomicReference<CameraFrame?>(null)
