@@ -18,30 +18,36 @@ data class Announcement(
   val dedupeKey: String? = null,
   /** Só falado se a verbosidade atual for >= este nível. */
   val minVerbosity: Verbosity = Verbosity.MINIMAL,
+  /**
+   * Tempo de vida (ms). Se o anúncio ficar na fila mais que isto sem ser falado,
+   * é descartado no poll (evita falar detecções obsoletas). null = nunca expira
+   * (use para mensagens de sistema como permissões).
+   */
+  val ttlMs: Long? = 2500L,
 )
 
 /**
  * Fila de anúncios pura (sem dependências Android) — testável em unit tests.
  *
- * Responsabilidades (Requisitos 2.4, 5.3, 5.4):
- *  - Ordenar por prioridade (HIGH primeiro), mantendo ordem de chegada dentro
- *    da mesma prioridade (estável).
- *  - Debounce por `dedupeKey` dentro de uma janela de tempo.
- *  - Filtrar por verbosidade.
+ * Resolve o descompasso detector-rápido/fala-lenta (Requisitos 2.4, 5.4):
+ *  - **TTL**: anúncios obsoletos são descartados no poll — só se fala o recente.
+ *  - **Debounce** por `dedupeKey`: não repete o mesmo rótulo por uma janela longa.
+ *  - **Sem duplicatas pendentes** e **fila curta** (maxQueue): evita acúmulo.
+ *  - Prioridade (HIGH fura a fila), ordem estável dentro da mesma prioridade.
  *
  * O tempo é injetado (clock) para testabilidade determinística.
  */
 class AnnouncementQueue(
-  private val debounceMs: Long = 3000L,
+  private val debounceMs: Long = 8000L,
   private val clock: () -> Long = { System.currentTimeMillis() },
-  private val maxQueue: Int = 8,
+  private val maxQueue: Int = 3,
 ) {
-  private val pending = ArrayDeque<Announcement>()
+  private data class Entry(val a: Announcement, val createdAt: Long, val seq: Long)
+
+  private val pending = ArrayDeque<Entry>()
   private val lastSeenAt = HashMap<String, Long>()
   private var verbosity: Verbosity = Verbosity.NORMAL
   private var seq = 0L
-  // (seq para ordenação estável por prioridade)
-  private val order = HashMap<Announcement, Long>()
 
   fun setVerbosity(v: Verbosity) { verbosity = v }
 
@@ -49,33 +55,44 @@ class AnnouncementQueue(
   fun offer(a: Announcement): Boolean {
     if (verbosity.ordinal < a.minVerbosity.ordinal) return false
 
+    val now = clock()
     val key = a.dedupeKey
     if (key != null) {
-      // Debounce: bloqueia se o mesmo rótulo foi enfileirado/falado há pouco.
       val last = lastSeenAt[key]
-      if (last != null && clock() - last < debounceMs) return false
-      // Evita também ter o mesmo rótulo duplicado aguardando na fila.
-      if (pending.any { it.dedupeKey == key }) return false
-      lastSeenAt[key] = clock()
+      if (last != null && now - last < debounceMs) return false
+      if (pending.any { it.a.dedupeKey == key }) return false
+      lastSeenAt[key] = now
     }
 
-    // Salvaguarda contra crescimento descontrolado da fila.
-    if (pending.size >= maxQueue) return false
+    if (pending.size >= maxQueue) {
+      // Fila cheia: só entra se tiver prioridade maior que o item mais fraco.
+      val weakest = pending.minByOrNull { it.a.priority.ordinal } ?: return false
+      if (a.priority.ordinal <= weakest.a.priority.ordinal) return false
+      pending.remove(weakest)
+    }
 
-    order[a] = seq++
-    // Inserção mantendo prioridade (HIGH no início da sua faixa).
-    val idx = pending.indexOfFirst { it.priority.ordinal < a.priority.ordinal }
-    if (idx < 0) pending.addLast(a) else pending.add(idx, a)
+    val entry = Entry(a, now, seq++)
+    val idx = pending.indexOfFirst { it.a.priority.ordinal < a.priority.ordinal }
+    if (idx < 0) pending.addLast(entry) else pending.add(idx, entry)
     return true
   }
 
-  /** Retira o próximo anúncio a falar. */
+  /**
+   * Retira o próximo anúncio a falar, descartando os que expiraram (TTL).
+   * Retorna null se não há nada recente a falar.
+   */
   fun poll(): Announcement? {
-    val a = pending.removeFirstOrNull() ?: return null
-    order.remove(a)
-    // Atualiza o instante para manter o debounce após a fala.
-    a.dedupeKey?.let { lastSeenAt[it] = clock() }
-    return a
+    val now = clock()
+    while (true) {
+      val e = pending.removeFirstOrNull() ?: return null
+      val ttl = e.a.ttlMs
+      if (ttl != null && now - e.createdAt > ttl) {
+        // expirado: descarta e tenta o próximo
+        continue
+      }
+      e.a.dedupeKey?.let { lastSeenAt[it] = now }
+      return e.a
+    }
   }
 
   fun isEmpty(): Boolean = pending.isEmpty()

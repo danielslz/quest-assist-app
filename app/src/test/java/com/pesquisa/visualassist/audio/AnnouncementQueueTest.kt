@@ -74,4 +74,44 @@ class AnnouncementQueueTest {
     assertEquals("b", q.poll()?.text)
     assertEquals("c", q.poll()?.text)
   }
+
+  @Test
+  fun expiredAnnouncementsAreDiscardedOnPoll() {
+    val clock = FakeClock(0L)
+    val q = AnnouncementQueue(clock = { clock.now })
+    q.offer(Announcement("cadeira à sua frente", dedupeKey = "cadeira", ttlMs = 2000L))
+    // avança além do TTL
+    clock.now = 3000L
+    assertNull(q.poll()) // expirou, não fala detecção velha
+  }
+
+  @Test
+  fun recentAnnouncementSpokenBeforeExpiry() {
+    val clock = FakeClock(0L)
+    val q = AnnouncementQueue(clock = { clock.now })
+    q.offer(Announcement("mesa à sua frente", dedupeKey = "mesa", ttlMs = 2000L))
+    clock.now = 1000L // dentro do TTL
+    assertEquals("mesa à sua frente", q.poll()?.text)
+  }
+
+  @Test
+  fun systemMessageNeverExpires() {
+    val clock = FakeClock(0L)
+    val q = AnnouncementQueue(clock = { clock.now })
+    q.offer(Announcement("Assistente visual iniciado.", priority = AudioPriority.HIGH, ttlMs = null))
+    clock.now = 60000L // muito depois
+    assertEquals("Assistente visual iniciado.", q.poll()?.text)
+  }
+
+  @Test
+  fun fullQueueRejectsLowerOrEqualPriority() {
+    val q = AnnouncementQueue(maxQueue = 2)
+    assertTrue(q.offer(Announcement("obj1", dedupeKey = "1")))
+    assertTrue(q.offer(Announcement("obj2", dedupeKey = "2")))
+    // fila cheia (2); NORMAL não entra
+    assertFalse(q.offer(Announcement("obj3", dedupeKey = "3")))
+    // HIGH entra, removendo o mais fraco
+    assertTrue(q.offer(Announcement("urgente", priority = AudioPriority.HIGH, dedupeKey = "4")))
+    assertEquals(2, q.size())
+  }
 }

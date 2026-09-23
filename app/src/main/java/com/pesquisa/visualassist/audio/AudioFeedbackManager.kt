@@ -29,14 +29,15 @@ class AudioFeedbackManager(
 
   fun setVerbosity(v: Verbosity) = queue.setVerbosity(v)
 
-  /** Fala uma mensagem livre (ex.: permissão). Prioridade alta, sem debounce. */
+  /** Fala uma mensagem livre (ex.: permissão). Prioridade alta, sem expirar. */
   fun announce(message: String, priority: AudioPriority = AudioPriority.HIGH) {
-    enqueue(Announcement(message, priority = priority))
+    enqueue(Announcement(message, priority = priority, ttlMs = null))
   }
 
   /** Converte detecções em anúncios com debounce por rótulo (Requisitos 2.3, 4.1). */
   fun report(detections: List<Detection>) {
-    for (d in detections) {
+    // Prioriza o objeto mais central/relevante quando há vários (fala menos, melhor).
+    for (d in detections.sortedByDescending { it.confidence }) {
       enqueue(
         Announcement(
           text = phraseFor(d),
@@ -44,6 +45,7 @@ class AudioFeedbackManager(
           direction = d.direction.toAudioDirection(),
           dedupeKey = d.label,
           minVerbosity = if (d.kind == Detection.Kind.OBJECT) Verbosity.NORMAL else Verbosity.MINIMAL,
+          ttlMs = 2500L, // detecção obsoleta após 2.5s não é mais falada
         )
       )
     }

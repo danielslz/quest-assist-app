@@ -25,6 +25,8 @@ interface VisionDetector {
 class VisionPipeline(
   private val context: Context,
   private val scope: CoroutineScope,
+  /** Intervalo mínimo entre inferências (ms). Evita saturar a fila de áudio. */
+  private val minInferenceIntervalMs: Long = 700L,
 ) {
   private val detectors = mutableListOf<VisionDetector>()
   private val latestFrame = AtomicReference<CameraFrame?>(null)
@@ -44,12 +46,19 @@ class VisionPipeline(
     running = true
     scope.launch(Dispatchers.Default) {
       detectors.forEach { it.warmup() }
+      var lastInference = 0L
       while (running) {
-        val frame = latestFrame.getAndSet(null)
-        if (frame == null) {
-          kotlinx.coroutines.delay(15) // evita busy-loop; ~66Hz de checagem
+        val now = System.currentTimeMillis()
+        if (now - lastInference < minInferenceIntervalMs) {
+          kotlinx.coroutines.delay(minInferenceIntervalMs - (now - lastInference))
           continue
         }
+        val frame = latestFrame.getAndSet(null)
+        if (frame == null) {
+          kotlinx.coroutines.delay(15) // evita busy-loop
+          continue
+        }
+        lastInference = System.currentTimeMillis()
         val all = detectors.flatMap { runCatching { it.detect(frame) }.getOrDefault(emptyList()) }
         if (all.isNotEmpty()) onResult(all)
       }
