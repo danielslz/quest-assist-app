@@ -1,0 +1,21 @@
+# Build outputs (qualquer módulo)
+**/build/
+.gradle/
+.kotlin/
+*.iml
+/local.properties
+/.idea/
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+
+# Modelos grandes (versionar via Git LFS se necessário)
+app/src/main/assets/models/*.onnx
+app/src/main/assets/models/*.tflite
+
+# Modelo de voz TTS (baixar do sherpa-onnx; ver README)
+app/src/main/assets/tts/
+/sessao-setup-quest.json
