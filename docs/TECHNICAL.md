@@ -10,6 +10,23 @@
 
 ---
 
+## 0. Licenciamento
+
+O projeto é distribuído sob a licença **MIT** (`LICENSE`) — permissiva, adequada
+a pesquisa acadêmica e código aberto, incentivando reuso em acessibilidade.
+
+Licenças das dependências (todas compatíveis com MIT):
+- Meta Spatial SDK / samples: MIT
+- MediaPipe Tasks Vision: Apache 2.0
+- sherpa-onnx: Apache 2.0
+- Modelo de voz `vits-piper-pt_BR-*`: ver licença do projeto Piper/sherpa-onnx
+- EfficientDet-Lite0 (MediaPipe models): Apache 2.0
+
+Os arquivos de modelo (voz TTS, detecção) NÃO são versionados no repositório;
+são baixados conforme o `README.md`.
+
+---
+
 ## 1. Visão geral
 
 O Assistente Visual transforma o Meta Quest 3 em um "óculos inteligente"

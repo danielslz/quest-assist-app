@@ -65,3 +65,11 @@ de dados da Meta.
 ## Estado
 Núcleo funcional validado no Quest 3: câmera → detecção → voz. Detalhes e
 próximos passos em `docs/TECHNICAL.md`.
+
+## Licença
+Distribuído sob a licença **MIT** — veja [`LICENSE`](LICENSE). Você pode usar,
+modificar e redistribuir livremente, mantendo o aviso de copyright.
+
+Dependências de terceiros mantêm suas próprias licenças (todas permissivas):
+Meta Spatial SDK (MIT nos samples), MediaPipe (Apache 2.0), sherpa-onnx (Apache 2.0),
+modelo de voz Piper pt-BR e EfficientDet-Lite (ver licenças dos respectivos projetos).
