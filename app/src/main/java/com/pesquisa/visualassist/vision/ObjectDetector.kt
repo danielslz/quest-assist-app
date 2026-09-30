@@ -16,12 +16,15 @@ import com.pesquisa.visualassist.camera.YuvUtils
  */
 class ObjectDetector(
   private val context: Context,
-  private val confidenceThreshold: Float = 0.5f,
+  confidenceThreshold: Float = 0.5f,
   private val maxResults: Int = 5,
   private val modelAsset: String = "models/efficientdet_lite0.tflite",
   /** Publica o frame anotado (câmera + boxes) no DebugFrameState para o painel. */
   private val publishDebugFrame: Boolean = true,
 ) : VisionDetector {
+
+  /** Limiar de confiança, ajustável em runtime pelas configurações. */
+  @Volatile var confidenceThreshold: Float = confidenceThreshold
 
   private var detector: MpObjectDetector? = null
 

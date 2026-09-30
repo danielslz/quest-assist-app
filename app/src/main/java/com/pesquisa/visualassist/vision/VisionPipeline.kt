@@ -32,6 +32,9 @@ class VisionPipeline(
   private val latestFrame = AtomicReference<CameraFrame?>(null)
   @Volatile private var running = false
 
+  /** Liga/desliga a inferência em runtime (configuração). Padrão: ligado. */
+  @Volatile var detectionEnabled = true
+
   fun register(detector: VisionDetector) {
     detectors.add(detector)
   }
@@ -56,6 +59,10 @@ class VisionPipeline(
         val frame = latestFrame.getAndSet(null)
         if (frame == null) {
           kotlinx.coroutines.delay(15) // evita busy-loop
+          continue
+        }
+        if (!detectionEnabled) {
+          kotlinx.coroutines.delay(100) // detecção desligada nas configurações
           continue
         }
         lastInference = System.currentTimeMillis()

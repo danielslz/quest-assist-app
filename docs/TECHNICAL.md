@@ -134,7 +134,16 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
   (ritmo da inferência, ~0.8 fps, publicadas pelo ObjectDetector). O painel
   compõe os dois → **preview fluido** com caixas que "seguem".
 
-### 3.6 Ciclo de vida / plataforma  ✅
+### 3.6 Configurações  ✅
+- `settings/Settings.kt` — modelo puro/imutável (verbosidade, limiar de confiança,
+  on/off da detecção, cloud on/off) com validação de faixa. **Testado.**
+- `settings/SettingsStore.kt` — persistência (SharedPreferences) + estado
+  observável (Compose); notifica observadores ao mudar. Aplicado em runtime a:
+  `AudioFeedbackManager` (verbosidade), `ObjectDetector` (limiar),
+  `VisionPipeline` (liga/desliga inferência).
+- Controles no `DebugPanel`. Cloud **OFF por padrão** (Requisito 7.4).
+
+### 3.7 Ciclo de vida / plataforma  ✅
 - `VisualAssistActivity.kt` — entrada; permissões com feedback por áudio;
   passthrough; painel; saída limpa (`finishApp`).
 - Manifest: hand tracking (sem controllers), passthrough, `passthrough-contextual`
@@ -190,7 +199,7 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | 5.4 | **Detecção de pessoas dedicada** | ⏳ | presença (sem identificação) |
 | 4.2 | **Áudio espacial (beep direcional)** | ⏳ | requer asset .wav mono 48kHz |
 | 6 | **Descrição de cena via cloud (LLM)** | ⏳ | opt-in; fallback offline; Ramalama p/ protótipo |
-| 7 | **Configurações** | ⏳ | verbosidade, limiar, on/off por voz/gesto |
+| 7 | Configurações | ✅ | verbosidade, limiar, on/off (painel); cloud OFF default |
 | — | Preview fluido no painel | ✅ | preview ~15fps desacoplado da inferência |
 | 8 | Empacotamento / publicação | ⏳ | split ABI, release, loja Meta |
 

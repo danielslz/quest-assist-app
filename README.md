@@ -19,12 +19,14 @@ Implementadas ✅
 - **Voz offline em pt-BR** (sherpa-onnx VITS/Piper) — o Quest não tem TTS de sistema
 - **Fila de áudio inteligente**: prioridade, debounce, descarte de anúncios
   obsoletos (TTL) e seleção por relevância (não fala demais)
-- **Painel de debug** com a câmera + bounding boxes e botão de fechar
+- **Painel de debug** com a câmera + bounding boxes (preview fluido) e botões
+- **Configurações**: verbosidade, limiar de confiança, ligar/desligar detecção
+  (persistidas); modo cloud desligado por padrão
 - **Hand tracking** (funciona sem controllers) · **100% offline** · sem persistir frames
 
 Planejadas ⏳
 - Detecção de pessoas (presença), áudio espacial, descrição de cena via LLM
-  (opt-in), configurações. Ver roadmap em `docs/TECHNICAL.md`.
+  (opt-in). Ver roadmap em `docs/TECHNICAL.md`.
 
 ## Documentação
 - **Técnica (arquitetura, tecnologias, roadmap)**: [`docs/TECHNICAL.md`](docs/TECHNICAL.md)

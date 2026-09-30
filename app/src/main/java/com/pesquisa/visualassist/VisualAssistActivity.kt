@@ -49,6 +49,8 @@ class VisualAssistActivity : AppSystemActivity() {
   private lateinit var vision: VisionPipeline
   private lateinit var camera: CameraController
   private val textReader = com.pesquisa.visualassist.vision.TextReader()
+  private lateinit var settings: com.pesquisa.visualassist.settings.SettingsStore
+  private lateinit var objectDetector: com.pesquisa.visualassist.vision.ObjectDetector
 
   /** Último frame recebido, para OCR sob demanda (não persistido em disco). */
   @Volatile private var lastFrame: CameraFrame? = null
@@ -66,8 +68,17 @@ class VisualAssistActivity : AppSystemActivity() {
     audio = AudioFeedbackManager(SherpaTtsEngine(this))
     vision = VisionPipeline(this, appScope)
     camera = CameraController(this)
+    settings = com.pesquisa.visualassist.settings.SettingsStore(this)
     // Detector de objetos on-device (Tarefa 5.2)
-    vision.register(com.pesquisa.visualassist.vision.ObjectDetector(this))
+    objectDetector = com.pesquisa.visualassist.vision.ObjectDetector(this)
+    vision.register(objectDetector)
+
+    // Aplica as configurações (Tarefa 7) aos componentes, reagindo a mudanças.
+    settings.observe { s ->
+      audio.setVerbosity(s.verbosity)
+      objectDetector.confidenceThreshold = s.confidenceThreshold
+      vision.detectionEnabled = s.objectDetectionEnabled
+    }
   }
 
   /**
@@ -115,7 +126,15 @@ class VisualAssistActivity : AppSystemActivity() {
     ComposeViewPanelRegistration(
       R.id.debug_panel,
       composeViewCreator = { _, ctx ->
-        ComposeView(ctx).apply { setContent { DebugPanel(onReadText = { readText() }, onClose = { finishApp() }) } }
+        ComposeView(ctx).apply {
+          setContent {
+            DebugPanel(
+              settings = settings,
+              onReadText = { readText() },
+              onClose = { finishApp() },
+            )
+          }
+        }
       },
       settingsCreator = {
         UIPanelSettings(

@@ -57,9 +57,10 @@
     - _Requisitos: 6.1_
 
 - [ ] 7. Configurações e privacidade
-  - [ ] 7.1 `SettingsStore` (verbosidade, limiar, idioma, cloud on/off, endpoint)
+  - [x] 7.1 `SettingsStore` (verbosidade, limiar, on/off detecção, cloud on/off)
+    - Persistência SharedPreferences; controles no painel; Settings puro testado
     - _Requisitos: 5.3, 6.3_
-  - [ ] 7.2 Garantir não-persistência de frames e modo 100% offline padrão
+  - [x] 7.2 Não-persistência de frames e modo offline padrão (cloud OFF por default)
     - _Requisitos: 7.1, 7.2, 7.4_
 
 - [ ] 8. Integração e validação no dispositivo
