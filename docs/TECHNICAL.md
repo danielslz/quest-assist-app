@@ -48,28 +48,29 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 ## 2. Arquitetura
 
 ```
-┌──────────────────────── Meta Quest 3 (Horizon OS v74+) ────────────────────────┐
-│                                                                                  │
-│  Passthrough Camera (Camera2) ──frames YUV_420_888 (1280x960)──▶ CameraController│
-│                                                                        │         │
-│                                                                        ▼         │
-│                                                            VisionPipeline (throttle│
-│                                                            ~1.2s, drop de frames) │
-│                                                                        │         │
-│                                        ┌───────────────────────────────┼───────┐ │
-│                                        ▼                               ▼        │ │
-│                                 ObjectDetector                 (OCR/Pessoas —   │ │
-│                                 (MediaPipe TFLite)              roadmap)         │ │
-│                                        │                                        │ │
-│                                        ▼                                        │ │
-│                         AudioFeedbackManager (fila c/ prioridade,               │ │
-│                         debounce, TTL, verbosidade)                             │ │
-│                                        │                                        │ │
-│                                        ▼                                        │ │
-│                         SherpaTtsEngine (VITS/Piper pt-BR, AudioTrack)          │ │
-│                                                                                  │
-│  DebugFrameState ──▶ DebugPanel (Compose, painel Spatial SDK): câmera + boxes    │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────── Meta Quest 3 · Horizon OS v74+ ──────────────────┐
+│                                                                     │
+│  Passthrough Camera (Camera2)                                       │
+│         │  frames YUV_420_888 (1280x960)                            │
+│         ▼                                                           │
+│  CameraController ─────────────▶ lastFrame (p/ OCR sob demanda)     │
+│         │                                                           │
+│         ▼                                                           │
+│  VisionPipeline  (coroutine · throttle ~1.2s · drop de frames)      │
+│         │                                                           │
+│         ▼                                                           │
+│  ObjectDetector (MediaPipe EfficientDet-Lite0)                      │
+│         │                     TextReader (ML Kit OCR, sob demanda)  │
+│         │                            │  (botão "Ler texto")         │
+│         ▼                            ▼                              │
+│  AudioFeedbackManager  (fila: prioridade · debounce · TTL)          │
+│         │                                                           │
+│         ▼                                                           │
+│  SherpaTtsEngine (VITS/Piper pt-BR) ─▶ AudioTrack ─▶ voz            │
+│                                                                     │
+│  ObjectDetector ─▶ DebugFrameState ─▶ DebugPanel (Compose)          │
+│                    painel Spatial SDK: câmera + bounding boxes      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Fluxo de execução
