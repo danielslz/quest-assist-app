@@ -69,9 +69,10 @@ class ObjectDetector(
     }
     if (out.isNotEmpty()) Log.i(TAG, "detectou: ${out.joinToString { it.label }}")
 
-    // Publica o frame anotado para o painel de debug (Opção A).
+    // Publica as detecções para o painel de debug (o preview da câmera é
+    // publicado separadamente pela Activity, de forma fluida).
     if (publishDebugFrame) {
-      runCatching { DebugFrameState.update(OverlayRenderer.draw(bitmap, out)) }
+      runCatching { DebugFrameState.updateDetections(out) }
     }
     return out
   }

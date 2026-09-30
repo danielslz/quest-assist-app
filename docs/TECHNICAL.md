@@ -127,11 +127,12 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 
 ### 3.5 Painel de debug com bounding boxes  ✅
 - `ui/DebugPanel.kt` — painel Compose (Spatial SDK) que mostra a câmera com as
-  caixas desenhadas + botão "Fechar app".
+  caixas desenhadas + botões "Ler texto" e "Fechar app".
 - `vision/OverlayRenderer.kt` — desenha boxes + rótulos (confiança %) no bitmap.
-- `vision/DebugFrameState.kt` — estado observável (Compose) do frame anotado.
-- Observação: o preview atualiza na taxa da inferência (~0.8 FPS), então é
-  "picotado" — é ferramenta de validação, não vídeo fluido.
+- `vision/DebugFrameState.kt` — estado observável (Compose) que separa o **frame
+  da câmera** (fluido, ~15 fps, publicado pela Activity) das **detecções**
+  (ritmo da inferência, ~0.8 fps, publicadas pelo ObjectDetector). O painel
+  compõe os dois → **preview fluido** com caixas que "seguem".
 
 ### 3.6 Ciclo de vida / plataforma  ✅
 - `VisualAssistActivity.kt` — entrada; permissões com feedback por áudio;
@@ -190,7 +191,7 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | 4.2 | **Áudio espacial (beep direcional)** | ⏳ | requer asset .wav mono 48kHz |
 | 6 | **Descrição de cena via cloud (LLM)** | ⏳ | opt-in; fallback offline; Ramalama p/ protótipo |
 | 7 | **Configurações** | ⏳ | verbosidade, limiar, on/off por voz/gesto |
-| — | **Preview fluido no painel** | ⏳ | desacoplar preview da inferência |
+| — | Preview fluido no painel | ✅ | preview ~15fps desacoplado da inferência |
 | 8 | Empacotamento / publicação | ⏳ | split ABI, release, loja Meta |
 
 Legenda: ✅ implementado · ⏳ planejado
@@ -200,7 +201,6 @@ Legenda: ✅ implementado · ⏳ planejado
   Mode) — limitação do launcher; resolvido ao publicar pela loja Meta.
 - Aviso "nome não disponível" ao **sair pelo botão do controle** do Quest
   (comportamento do Nautilus); sair pelo botão do app não dispara.
-- Preview do painel de debug é "picotado" (taxa da inferência).
 
 ---
 

@@ -53,6 +53,7 @@ class VisualAssistActivity : AppSystemActivity() {
   /** Último frame recebido, para OCR sob demanda (não persistido em disco). */
   @Volatile private var lastFrame: CameraFrame? = null
   @Volatile private var reading = false
+  @Volatile private var lastPreviewMs = 0L
 
   /** VRFeature é obrigatório para o AppSystemActivity inicializar o render de VR. */
   override fun registerFeatures(): List<SpatialFeature> {
@@ -175,6 +176,17 @@ class VisualAssistActivity : AppSystemActivity() {
             intrinsics = camera.intrinsics,
           )
           lastFrame = frame
+          // Preview fluido: publica o bitmap da câmera com throttle leve (~15fps),
+          // independente da inferência (que roda ~0.8fps).
+          val now = System.currentTimeMillis()
+          if (now - lastPreviewMs >= PREVIEW_INTERVAL_MS) {
+            lastPreviewMs = now
+            runCatching {
+              com.pesquisa.visualassist.vision.DebugFrameState.updateCamera(
+                YuvUtils.nv21ToBitmap(frame.yuv, frame.width, frame.height)
+              )
+            }
+          }
           vision.submit(frame) { detections -> audio.report(detections) }
         } finally {
           finally()
@@ -224,5 +236,6 @@ class VisualAssistActivity : AppSystemActivity() {
 
   companion object {
     private const val REQ_CAMERA = 1001
+    private const val PREVIEW_INTERVAL_MS = 66L // ~15 fps para o preview de debug
   }
 }
