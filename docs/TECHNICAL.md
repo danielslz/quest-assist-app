@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-09-23 (OCR sob demanda)
+Última atualização: 2026-09-30 (preview fluido + configurações)
 
 ---
 
@@ -206,6 +206,13 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 Legenda: ✅ implementado · ⏳ planejado
 
 ### Limitações conhecidas
+- **Deploy/teste no device pendente**: o Modo de Desenvolvedor exige a conta
+  **proprietária** do headset. O Quest em uso é emprestado e a conta atual é
+  secundária, então o adb fica `unauthorized` e não é possível fazer deploy até
+  resolver o acesso de proprietário. As features "preview fluido" e
+  "configurações" (7) estão implementadas e testadas (unit), mas ainda **não
+  validadas no device**. O núcleo (câmera, objetos, OCR, voz) foi validado no
+  Quest 3 em sessões anteriores.
 - **Ícone de app sideloaded** não é exibido pelo launcher Nautilus (Developer
   Mode) — limitação do launcher; resolvido ao publicar pela loja Meta.
 - Aviso "nome não disponível" ao **sair pelo botão do controle** do Quest
@@ -225,18 +232,21 @@ Lógica pura coberta por JUnit (rodar na `quest-dev`):
 ```bash
 distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:testDebugUnitTest'
 ```
-Cobertura atual: `ResolutionPolicy`, `DirectionMapper`, `AnnouncementQueue`
-(prioridade, debounce, TTL, fila cheia), `AudioFeedbackManager` (fluxo serial).
+Cobertura atual (26 testes): `ResolutionPolicy`, `DirectionMapper`,
+`AnnouncementQueue` (prioridade, debounce, TTL, fila cheia),
+`AudioFeedbackManager` (fluxo serial), `Settings` (defaults, validação de limiar).
 
 ## 9. Estrutura do código
 ```
 app/src/main/java/com/pesquisa/visualassist/
-  VisualAssistActivity.kt      entrada, ciclo de vida, painel
-  camera/  CameraController, CameraEye, ResolutionPolicy, YuvUtils
-  vision/  VisionPipeline, ObjectDetector, DirectionMapper, Models,
-           OverlayRenderer, DebugFrameState, (TextRecognizer/PersonDetector stubs)
-  audio/   AudioFeedbackManager, AnnouncementQueue, SpeechEngine, SherpaTtsEngine
-  ui/      DebugPanel
+  VisualAssistActivity.kt      entrada, ciclo de vida, painel, OCR sob demanda
+  camera/    CameraController, CameraEye, ResolutionPolicy, YuvUtils
+  vision/    VisionPipeline, ObjectDetector, TextReader (OCR), DirectionMapper,
+             Models, OverlayRenderer, DebugFrameState,
+             PersonDetector (stub — Tarefa 5.4)
+  audio/     AudioFeedbackManager, AnnouncementQueue, SpeechEngine, SherpaTtsEngine
+  settings/  Settings (puro), SettingsStore (persistência + observável)
+  ui/        DebugPanel
 app/src/main/assets/  models/ (tflite)  tts/ (voz VITS pt-BR)
 .kiro/specs/visual-assist/  requirements.md, design.md, tasks.md
 .kiro/steering/  build.md, environment.md, maintenance.md
