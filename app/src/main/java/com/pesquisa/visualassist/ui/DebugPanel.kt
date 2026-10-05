@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Slider
@@ -59,9 +56,9 @@ fun DebugPanel(
     modifier = Modifier.fillMaxSize().background(Color(0xCC000000)).padding(6.dp),
     verticalArrangement = Arrangement.spacedBy(4.dp),
   ) {
-    // --- PREVIEW (domina ~80% da altura) ---
+    // --- PREVIEW (domina a maior parte da altura) ---
     Box(
-      modifier = Modifier.fillMaxWidth().weight(4f),
+      modifier = Modifier.fillMaxWidth().weight(3f),
       contentAlignment = Alignment.Center,
     ) {
       if (composed != null) {
@@ -76,9 +73,9 @@ fun DebugPanel(
       }
     }
 
-    // --- CONTROLES (faixa compacta ~20%, rolável se precisar) ---
+    // --- CONTROLES (faixa compacta, sem rolagem) ---
     Column(
-      modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()),
+      modifier = Modifier.fillMaxWidth().weight(1f),
       verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
       // Linha 1: verbosidade (compacta) + ações

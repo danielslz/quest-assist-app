@@ -110,11 +110,13 @@ class VisualAssistActivity : AppSystemActivity() {
     // Boas-vindas por áudio e fluxo de permissão.
     audio.announce("Assistente visual iniciado.")
 
-    // Painel de debug (Opção A): câmera + bounding boxes, ~2m à frente.
+    // Painel de debug: câmera + bounding boxes + controles, ~2m à frente.
+    // Grabbable torna o painel movível (agarrar com a mão/controle, como apps nativos).
     Entity.create(
       listOf(
         Panel(R.id.debug_panel),
         Transform(Pose(Vector3(0f, 1.2f, 2f))),
+        com.meta.spatial.toolkit.Grabbable(),
       )
     )
 
