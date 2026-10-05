@@ -117,11 +117,11 @@ class VisualAssistActivity : AppSystemActivity() {
     audio.announce("Assistente visual iniciado.")
 
     // Painel de debug: câmera + bounding boxes + controles.
-    // IsdkPanelGrabHandle: alça visível para mover. IsdkPanelResize: redimensionar.
+    // Componentes ISDK (consistentes entre si): mover (alça) + redimensionar.
     Entity.createPanelEntity(
       R.id.debug_panel,
       Transform(Pose(Vector3(0f, 1.2f, 1.5f))),
-      Grabbable(),
+      com.meta.spatial.isdk.IsdkGrabbable(),
       com.meta.spatial.isdk.IsdkPanelGrabHandle(),
       com.meta.spatial.isdk.IsdkPanelResize(resizeMode = com.meta.spatial.isdk.ResizeMode.Relayout),
     )
