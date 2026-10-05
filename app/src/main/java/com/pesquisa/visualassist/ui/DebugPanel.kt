@@ -5,10 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Slider
@@ -21,7 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pesquisa.visualassist.audio.Verbosity
 import com.pesquisa.visualassist.settings.Settings
 import com.pesquisa.visualassist.settings.SettingsStore
@@ -29,9 +35,8 @@ import com.pesquisa.visualassist.vision.DebugFrameState
 import com.pesquisa.visualassist.vision.OverlayRenderer
 
 /**
- * Painel de debug + configurações (Tarefas 5.2/5.3/7).
- * Mostra a câmera com bounding boxes (preview fluido) e controles: verbosidade,
- * limiar de confiança, ligar/desligar detecção, e ações (ler texto, fechar).
+ * Painel de debug + configurações. Layout: o preview da câmera domina a área
+ * (~80%); os controles ficam numa faixa compacta e rolável embaixo.
  */
 @Composable
 fun DebugPanel(
@@ -47,13 +52,18 @@ fun DebugPanel(
     camera?.let { OverlayRenderer.draw(it, detections) }
   }
 
+  // Botão compacto reutilizável
+  val smallPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+
   Column(
-    modifier = Modifier.fillMaxSize().background(Color(0xCC000000)).padding(8.dp),
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.spacedBy(6.dp),
+    modifier = Modifier.fillMaxSize().background(Color(0xCC000000)).padding(6.dp),
+    verticalArrangement = Arrangement.spacedBy(4.dp),
   ) {
-    // Preview da câmera
-    Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+    // --- PREVIEW (domina ~80% da altura) ---
+    Box(
+      modifier = Modifier.fillMaxWidth().weight(4f),
+      contentAlignment = Alignment.Center,
+    ) {
       if (composed != null) {
         Image(
           bitmap = composed.asImageBitmap(),
@@ -66,44 +76,62 @@ fun DebugPanel(
       }
     }
 
-    // --- Configurações (Tarefa 7) ---
-    // Verbosidade
-    Text("Verbosidade", color = Color.White)
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-      Verbosity.values().forEach { v ->
-        val selected = s.verbosity == v
-        Button(
-          onClick = { settings.update { it.copy(verbosity = v) } },
-          colors = if (selected) ButtonDefaults.buttonColors()
-                   else ButtonDefaults.outlinedButtonColors(),
-        ) { Text(v.name) }
+    // --- CONTROLES (faixa compacta ~20%, rolável se precisar) ---
+    Column(
+      modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()),
+      verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+      // Linha 1: verbosidade (compacta) + ações
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text("Voz:", color = Color.White, fontSize = 12.sp)
+        Verbosity.values().forEach { v ->
+          val selected = s.verbosity == v
+          Button(
+            onClick = { settings.update { it.copy(verbosity = v) } },
+            contentPadding = smallPadding,
+            colors = if (selected) ButtonDefaults.buttonColors()
+                     else ButtonDefaults.outlinedButtonColors(),
+          ) { Text(v.name.take(3), fontSize = 11.sp) } // MIN / NOR / DET
+        }
+      }
+
+      // Linha 2: limiar de confiança (label + slider na mesma linha)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text("Conf. ${(s.confidenceThreshold * 100).toInt()}%", color = Color.White, fontSize = 12.sp)
+        Slider(
+          value = s.confidenceThreshold,
+          onValueChange = { settings.update { st -> st.withConfidence(it) } },
+          valueRange = Settings.MIN_CONFIDENCE..Settings.MAX_CONFIDENCE,
+          modifier = Modifier.weight(1f),
+        )
+      }
+
+      // Linha 3: toggle detecção + botões de ação (tudo numa linha)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text("Objetos", color = Color.White, fontSize = 12.sp)
+        Switch(
+          checked = s.objectDetectionEnabled,
+          onCheckedChange = { on -> settings.update { it.copy(objectDetectionEnabled = on) } },
+        )
+        Button(onClick = onReadText, contentPadding = smallPadding) {
+          Text("Ler texto", fontSize = 12.sp)
+        }
+        Button(onClick = onClose, contentPadding = smallPadding) {
+          Text("Fechar", fontSize = 12.sp)
+        }
       }
     }
-
-    // Limiar de confiança
-    Text("Confiança mínima: ${(s.confidenceThreshold * 100).toInt()}%", color = Color.White)
-    Slider(
-      value = s.confidenceThreshold,
-      onValueChange = { settings.update { st -> st.withConfidence(it) } },
-      valueRange = Settings.MIN_CONFIDENCE..Settings.MAX_CONFIDENCE,
-      modifier = Modifier.fillMaxWidth(),
-    )
-
-    // Toggle detecção de objetos
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically,
-    ) {
-      Text("Detecção de objetos", color = Color.White)
-      Switch(
-        checked = s.objectDetectionEnabled,
-        onCheckedChange = { on -> settings.update { it.copy(objectDetectionEnabled = on) } },
-      )
-    }
-
-    // Ações
-    Button(onClick = onReadText, modifier = Modifier.fillMaxWidth()) { Text("Ler texto") }
-    Button(onClick = onClose, modifier = Modifier.fillMaxWidth()) { Text("Fechar app") }
   }
 }
