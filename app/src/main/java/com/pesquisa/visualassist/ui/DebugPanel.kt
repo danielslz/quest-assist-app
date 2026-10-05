@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Slider
@@ -56,9 +57,9 @@ fun DebugPanel(
     modifier = Modifier.fillMaxSize().background(Color(0xCC000000)).padding(6.dp),
     verticalArrangement = Arrangement.spacedBy(4.dp),
   ) {
-    // --- PREVIEW (domina a maior parte da altura) ---
+    // --- PREVIEW (ocupa o espaço restante acima dos controles) ---
     Box(
-      modifier = Modifier.fillMaxWidth().weight(3f),
+      modifier = Modifier.fillMaxWidth().weight(1f),
       contentAlignment = Alignment.Center,
     ) {
       if (composed != null) {
@@ -73,9 +74,9 @@ fun DebugPanel(
       }
     }
 
-    // --- CONTROLES (faixa compacta, sem rolagem) ---
+    // --- CONTROLES (altura pelo conteúdo: nunca são cortados ao redimensionar) ---
     Column(
-      modifier = Modifier.fillMaxWidth().weight(1f),
+      modifier = Modifier.fillMaxWidth().wrapContentHeight(),
       verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
       // Linha 1: verbosidade + toggle de detecção de objetos
