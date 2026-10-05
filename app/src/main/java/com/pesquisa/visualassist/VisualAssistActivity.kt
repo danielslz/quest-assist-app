@@ -140,10 +140,15 @@ class VisualAssistActivity : AppSystemActivity() {
               settings = settings,
               onReadText = { readText() },
               onClose = { finishApp() },
-              onNearer = { movePanel(-0.3f) },
-              onFarther = { movePanel(0.3f) },
+              onNearer = { movePanel(dz = -0.3f) },
+              onFarther = { movePanel(dz = 0.3f) },
               onBigger = { scalePanel(1.15f) },
               onSmaller = { scalePanel(0.87f) },
+              onLeft = { movePanel(dx = -0.3f) },
+              onRight = { movePanel(dx = 0.3f) },
+              onUp = { movePanel(dy = 0.2f) },
+              onDown = { movePanel(dy = -0.2f) },
+              onCenter = { centerPanel() },
             )
           }
         }
@@ -251,10 +256,22 @@ class VisualAssistActivity : AppSystemActivity() {
     }
   }
 
-  /** Aproxima/afasta o painel (botões). delta em metros. */
-  private fun movePanel(deltaZ: Float) {
-    panelDistance = (panelDistance + deltaZ).coerceIn(0.5f, 4.0f)
-    panelEntity?.setComponent(Transform(Pose(Vector3(0f, 1.2f, panelDistance))))
+  /** Posição atual do painel (X lateral, Y altura, Z distância). */
+  private var panelX = 0f
+  private var panelY = 1.2f
+
+  /** Move o painel nos eixos (botões). */
+  private fun movePanel(dx: Float = 0f, dy: Float = 0f, dz: Float = 0f) {
+    panelX = (panelX + dx).coerceIn(-2.5f, 2.5f)
+    panelY = (panelY + dy).coerceIn(0.2f, 2.5f)
+    panelDistance = (panelDistance + dz).coerceIn(0.5f, 4.0f)
+    panelEntity?.setComponent(Transform(Pose(Vector3(panelX, panelY, panelDistance))))
+  }
+
+  /** Recentraliza o painel na frente do usuário (posição padrão). */
+  private fun centerPanel() {
+    panelX = 0f; panelY = 1.2f; panelDistance = 1.5f
+    panelEntity?.setComponent(Transform(Pose(Vector3(panelX, panelY, panelDistance))))
   }
 
   /** Aumenta/diminui o painel (botões). factor multiplicativo. */

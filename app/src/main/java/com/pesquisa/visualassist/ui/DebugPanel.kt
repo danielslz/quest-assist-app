@@ -45,6 +45,11 @@ fun DebugPanel(
   onFarther: () -> Unit = {},
   onBigger: () -> Unit = {},
   onSmaller: () -> Unit = {},
+  onLeft: () -> Unit = {},
+  onRight: () -> Unit = {},
+  onUp: () -> Unit = {},
+  onDown: () -> Unit = {},
+  onCenter: () -> Unit = {},
 ) {
   val camera = DebugFrameState.cameraFrame
   val detections = DebugFrameState.detections
@@ -121,7 +126,21 @@ fun DebugPanel(
         )
       }
 
-      // Linha 3: posição e tamanho do painel (controle determinístico)
+      // Linha 3a: mover o painel no espaço (esquerda/direita/cima/baixo/centro)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text("Mover:", color = Color.White, fontSize = 12.sp)
+        Button(onClick = onLeft, modifier = Modifier.weight(1f), contentPadding = smallPadding) { Text("←", fontSize = 14.sp) }
+        Button(onClick = onRight, modifier = Modifier.weight(1f), contentPadding = smallPadding) { Text("→", fontSize = 14.sp) }
+        Button(onClick = onUp, modifier = Modifier.weight(1f), contentPadding = smallPadding) { Text("↑", fontSize = 14.sp) }
+        Button(onClick = onDown, modifier = Modifier.weight(1f), contentPadding = smallPadding) { Text("↓", fontSize = 14.sp) }
+        Button(onClick = onCenter, modifier = Modifier.weight(1.4f), contentPadding = smallPadding) { Text("Centro", fontSize = 11.sp) }
+      }
+
+      // Linha 3b: posição e tamanho do painel (controle determinístico)
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
