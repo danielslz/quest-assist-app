@@ -61,7 +61,11 @@ class VisualAssistActivity : AppSystemActivity() {
 
   /** VRFeature é obrigatório para o AppSystemActivity inicializar o render de VR. */
   override fun registerFeatures(): List<SpatialFeature> {
-    return listOf(VRFeature(this), ComposeFeature())
+    return listOf(
+      VRFeature(this),
+      ComposeFeature(),
+      com.meta.spatial.isdk.IsdkFeature(this, spatial, systemManager),
+    )
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,12 +116,13 @@ class VisualAssistActivity : AppSystemActivity() {
     // Boas-vindas por áudio e fluxo de permissão.
     audio.announce("Assistente visual iniciado.")
 
-    // Painel de debug: câmera + bounding boxes + controles, ~2m à frente.
-    // createPanelEntity configura a interação/colisão do painel; Grabbable o torna movível.
+    // Painel de debug: câmera + bounding boxes + controles.
+    // Grabbable: mover. IsdkPanelResize: redimensionar (puxar as bordas).
     Entity.createPanelEntity(
       R.id.debug_panel,
-      Transform(Pose(Vector3(0f, 1.2f, 2f))),
+      Transform(Pose(Vector3(0f, 1.2f, 1.5f))),
       Grabbable(),
+      com.meta.spatial.isdk.IsdkPanelResize(resizeMode = com.meta.spatial.isdk.ResizeMode.Relayout),
     )
 
     requestCameraPermissionThenStart()
@@ -140,7 +145,7 @@ class VisualAssistActivity : AppSystemActivity() {
       },
       settingsCreator = {
         UIPanelSettings(
-          shape = QuadShapeOptions(width = 1.0f, height = 0.75f), // 4:3 físico
+          shape = QuadShapeOptions(width = 1.4f, height = 1.05f), // 4:3 físico (maior)
           style = PanelStyleOptions(themeResourceId = R.style.PanelAppThemeTransparent),
           // Resolução lógica (dp) explícita → dá ao Compose um espaço de layout
           // bem definido (sem isso o layout quebra: botões achatados).
