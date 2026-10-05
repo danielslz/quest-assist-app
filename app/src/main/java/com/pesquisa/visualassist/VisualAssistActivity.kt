@@ -58,14 +58,15 @@ class VisualAssistActivity : AppSystemActivity() {
   @Volatile private var lastFrame: CameraFrame? = null
   @Volatile private var reading = false
   @Volatile private var lastPreviewMs = 0L
+  private var panelEntity: Entity? = null
+
+  /** Distância (Z) e escala atuais do painel, ajustadas pelos botões. */
+  private var panelDistance = 1.5f
+  private var panelScale = 1.0f
 
   /** VRFeature é obrigatório para o AppSystemActivity inicializar o render de VR. */
   override fun registerFeatures(): List<SpatialFeature> {
-    return listOf(
-      VRFeature(this),
-      ComposeFeature(),
-      com.meta.spatial.isdk.IsdkFeature(this, spatial, systemManager),
-    )
+    return listOf(VRFeature(this), ComposeFeature())
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,13 +118,12 @@ class VisualAssistActivity : AppSystemActivity() {
     audio.announce("Assistente visual iniciado.")
 
     // Painel de debug: câmera + bounding boxes + controles.
-    // Grabbable (toolkit): mover agarrando o painel (gatilho do controle sobre ele).
-    // IsdkPanelResize: redimensionar puxando as bordas.
-    Entity.createPanelEntity(
+    // Posição/tamanho são controlados por botões no painel (determinístico e
+    // acessível — o grab por gesto do SDK é inconsistente neste fluxo).
+    panelEntity = Entity.createPanelEntity(
       R.id.debug_panel,
       Transform(Pose(Vector3(0f, 1.2f, 1.5f))),
-      com.meta.spatial.toolkit.Grabbable(),
-      com.meta.spatial.isdk.IsdkPanelResize(resizeMode = com.meta.spatial.isdk.ResizeMode.Relayout),
+      com.meta.spatial.toolkit.Grabbable(), // permite mover por gesto se o usuário conseguir
     )
 
     requestCameraPermissionThenStart()
@@ -140,6 +140,10 @@ class VisualAssistActivity : AppSystemActivity() {
               settings = settings,
               onReadText = { readText() },
               onClose = { finishApp() },
+              onNearer = { movePanel(-0.3f) },
+              onFarther = { movePanel(0.3f) },
+              onBigger = { scalePanel(1.15f) },
+              onSmaller = { scalePanel(0.87f) },
             )
           }
         }
@@ -245,6 +249,18 @@ class VisualAssistActivity : AppSystemActivity() {
       }
       reading = false
     }
+  }
+
+  /** Aproxima/afasta o painel (botões). delta em metros. */
+  private fun movePanel(deltaZ: Float) {
+    panelDistance = (panelDistance + deltaZ).coerceIn(0.5f, 4.0f)
+    panelEntity?.setComponent(Transform(Pose(Vector3(0f, 1.2f, panelDistance))))
+  }
+
+  /** Aumenta/diminui o painel (botões). factor multiplicativo. */
+  private fun scalePanel(factor: Float) {
+    panelScale = (panelScale * factor).coerceIn(0.5f, 2.5f)
+    panelEntity?.setComponent(com.meta.spatial.toolkit.Scale(Vector3(panelScale, panelScale, panelScale)))
   }
 
   /** Encerra o app de forma limpa (botão do painel de debug). */

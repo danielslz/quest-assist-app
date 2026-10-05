@@ -41,6 +41,10 @@ fun DebugPanel(
   settings: SettingsStore,
   onReadText: () -> Unit = {},
   onClose: () -> Unit = {},
+  onNearer: () -> Unit = {},
+  onFarther: () -> Unit = {},
+  onBigger: () -> Unit = {},
+  onSmaller: () -> Unit = {},
 ) {
   val camera = DebugFrameState.cameraFrame
   val detections = DebugFrameState.detections
@@ -117,7 +121,28 @@ fun DebugPanel(
         )
       }
 
-      // Linha 3: botões de ação (cada um ocupa metade da largura)
+      // Linha 3: posição e tamanho do painel (controle determinístico)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text("Painel:", color = Color.White, fontSize = 12.sp)
+        Button(onClick = onNearer, modifier = Modifier.weight(1f), contentPadding = smallPadding) {
+          Text("Perto", fontSize = 12.sp)
+        }
+        Button(onClick = onFarther, modifier = Modifier.weight(1f), contentPadding = smallPadding) {
+          Text("Longe", fontSize = 12.sp)
+        }
+        Button(onClick = onSmaller, modifier = Modifier.weight(1f), contentPadding = smallPadding) {
+          Text("Menor", fontSize = 12.sp)
+        }
+        Button(onClick = onBigger, modifier = Modifier.weight(1f), contentPadding = smallPadding) {
+          Text("Maior", fontSize = 12.sp)
+        }
+      }
+
+      // Linha 4: botões de ação (cada um ocupa metade da largura)
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
