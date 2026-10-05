@@ -107,7 +107,7 @@ fun DebugPanel(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
-        Text("Conf. ${(s.confidenceThreshold * 100).toInt()}%", color = Color.White, fontSize = 12.sp)
+        Text("Confiança: ${(s.confidenceThreshold * 100).toInt()}%", color = Color.White, fontSize = 12.sp)
         Slider(
           value = s.confidenceThreshold,
           onValueChange = { settings.update { st -> st.withConfidence(it) } },

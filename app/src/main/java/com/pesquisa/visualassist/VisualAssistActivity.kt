@@ -65,6 +65,8 @@ class VisualAssistActivity : AppSystemActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     android.util.Log.i("VisualAssist", "onCreate chamado")
+    // Habilita o grab/mover de painéis (processa o componente Grabbable).
+    systemManager.registerSystem(com.meta.spatial.toolkit.GrabbableSystem())
     audio = AudioFeedbackManager(SherpaTtsEngine(this))
     vision = VisionPipeline(this, appScope)
     camera = CameraController(this)
