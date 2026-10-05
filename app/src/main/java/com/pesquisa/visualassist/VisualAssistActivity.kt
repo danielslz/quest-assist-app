@@ -14,7 +14,7 @@ import com.meta.spatial.core.SpatialFeature
 import com.meta.spatial.core.Vector3
 import com.meta.spatial.runtime.ReferenceSpace
 import com.meta.spatial.toolkit.AppSystemActivity
-import com.meta.spatial.toolkit.DpPerMeterDisplayOptions
+import com.meta.spatial.toolkit.DpDisplayOptions
 import com.meta.spatial.toolkit.Panel
 import com.meta.spatial.toolkit.PanelRegistration
 import com.meta.spatial.toolkit.PanelStyleOptions
@@ -140,9 +140,11 @@ class VisualAssistActivity : AppSystemActivity() {
       },
       settingsCreator = {
         UIPanelSettings(
-          shape = QuadShapeOptions(width = 1.28f, height = 0.96f), // 4:3 como a câmera
+          shape = QuadShapeOptions(width = 1.0f, height = 0.75f), // 4:3 físico
           style = PanelStyleOptions(themeResourceId = R.style.PanelAppThemeTransparent),
-          display = DpPerMeterDisplayOptions(),
+          // Resolução lógica (dp) explícita → dá ao Compose um espaço de layout
+          // bem definido (sem isso o layout quebra: botões achatados).
+          display = DpDisplayOptions(width = 800f, height = 600f, dpi = 400),
         )
       },
     ),

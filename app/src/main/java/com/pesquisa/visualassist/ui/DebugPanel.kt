@@ -78,7 +78,7 @@ fun DebugPanel(
       modifier = Modifier.fillMaxWidth().weight(1f),
       verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-      // Linha 1: verbosidade (compacta) + ações
+      // Linha 1: verbosidade + toggle de detecção de objetos
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -94,6 +94,11 @@ fun DebugPanel(
                      else ButtonDefaults.outlinedButtonColors(),
           ) { Text(v.name.take(3), fontSize = 11.sp) } // MIN / NOR / DET
         }
+        Text("  Detecção", color = Color.White, fontSize = 12.sp)
+        Switch(
+          checked = s.objectDetectionEnabled,
+          onCheckedChange = { on -> settings.update { it.copy(objectDetectionEnabled = on) } },
+        )
       }
 
       // Linha 2: limiar de confiança (label + slider na mesma linha)
@@ -111,22 +116,17 @@ fun DebugPanel(
         )
       }
 
-      // Linha 3: toggle detecção + botões de ação (tudo numa linha)
+      // Linha 3: botões de ação (cada um ocupa metade da largura)
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
-        Text("Objetos", color = Color.White, fontSize = 12.sp)
-        Switch(
-          checked = s.objectDetectionEnabled,
-          onCheckedChange = { on -> settings.update { it.copy(objectDetectionEnabled = on) } },
-        )
-        Button(onClick = onReadText, contentPadding = smallPadding) {
-          Text("Ler texto", fontSize = 12.sp)
+        Button(onClick = onReadText, modifier = Modifier.weight(1f), contentPadding = smallPadding) {
+          Text("Ler texto", fontSize = 13.sp)
         }
-        Button(onClick = onClose, contentPadding = smallPadding) {
-          Text("Fechar", fontSize = 12.sp)
+        Button(onClick = onClose, modifier = Modifier.weight(1f), contentPadding = smallPadding) {
+          Text("Fechar", fontSize = 13.sp)
         }
       }
     }
