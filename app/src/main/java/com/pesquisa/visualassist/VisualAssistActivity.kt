@@ -14,6 +14,8 @@ import com.meta.spatial.core.SpatialFeature
 import com.meta.spatial.core.Vector3
 import com.meta.spatial.runtime.ReferenceSpace
 import com.meta.spatial.toolkit.AppSystemActivity
+import com.meta.spatial.toolkit.Grabbable
+import com.meta.spatial.toolkit.createPanelEntity
 import com.meta.spatial.toolkit.DpDisplayOptions
 import com.meta.spatial.toolkit.Panel
 import com.meta.spatial.toolkit.PanelRegistration
@@ -111,13 +113,11 @@ class VisualAssistActivity : AppSystemActivity() {
     audio.announce("Assistente visual iniciado.")
 
     // Painel de debug: câmera + bounding boxes + controles, ~2m à frente.
-    // Grabbable torna o painel movível (agarrar com a mão/controle, como apps nativos).
-    Entity.create(
-      listOf(
-        Panel(R.id.debug_panel),
-        Transform(Pose(Vector3(0f, 1.2f, 2f))),
-        com.meta.spatial.toolkit.Grabbable(),
-      )
+    // createPanelEntity configura a interação/colisão do painel; Grabbable o torna movível.
+    Entity.createPanelEntity(
+      R.id.debug_panel,
+      Transform(Pose(Vector3(0f, 1.2f, 2f))),
+      Grabbable(),
     )
 
     requestCameraPermissionThenStart()
