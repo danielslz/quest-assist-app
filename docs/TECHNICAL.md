@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-09-30 (preview fluido + configurações)
+Última atualização: 2026-10-05 (UX do painel: preview fluido, controles ocultáveis, posição por botões)
 
 ---
 
@@ -126,13 +126,21 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
   detectado" quando vazio. Não roda no pipeline contínuo (é pontual).
 
 ### 3.5 Painel de debug com bounding boxes  ✅
-- `ui/DebugPanel.kt` — painel Compose (Spatial SDK) que mostra a câmera com as
-  caixas desenhadas + botões "Ler texto" e "Fechar app".
+- `ui/DebugPanel.kt` — painel Compose (Spatial SDK). Design limpo: por padrão só
+  o **preview grande** + barra enxuta (Ler texto · Ajustes · Fechar). O botão
+  **"Ajustes"** expande/recolhe os controles (verbosidade, detecção, confiança,
+  mover ←→↑↓, perto/longe, menor/maior).
 - `vision/OverlayRenderer.kt` — desenha boxes + rótulos (confiança %) no bitmap.
 - `vision/DebugFrameState.kt` — estado observável (Compose) que separa o **frame
   da câmera** (fluido, ~15 fps, publicado pela Activity) das **detecções**
   (ritmo da inferência, ~0.8 fps, publicadas pelo ObjectDetector). O painel
   compõe os dois → **preview fluido** com caixas que "seguem".
+- **Posição/tamanho por botões** (determinístico): a Activity ajusta `Transform`
+  (X/Y/Z) e `Scale` da entidade do painel. O painel é criado com
+  `Entity.createPanelEntity(...)`; o painel usa resolução lógica definida
+  (`DpDisplayOptions`) para o Compose medir o layout corretamente.
+- Nota: o grab por gesto do SDK (`Grabbable`/ISDK) mostrou-se inconsistente
+  neste fluxo (`createPanelEntity`) — por isso o reposicionamento é por botões.
 
 ### 3.6 Configurações  ✅
 - `settings/Settings.kt` — modelo puro/imutável (verbosidade, limiar de confiança,
@@ -206,17 +214,18 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 Legenda: ✅ implementado · ⏳ planejado
 
 ### Limitações conhecidas
-- **Deploy/teste no device pendente**: o Modo de Desenvolvedor exige a conta
-  **proprietária** do headset. O Quest em uso é emprestado e a conta atual é
-  secundária, então o adb fica `unauthorized` e não é possível fazer deploy até
-  resolver o acesso de proprietário. As features "preview fluido" e
-  "configurações" (7) estão implementadas e testadas (unit), mas ainda **não
-  validadas no device**. O núcleo (câmera, objetos, OCR, voz) foi validado no
-  Quest 3 em sessões anteriores.
+- **Grab por gesto do painel**: mover/redimensionar o painel pelo gesto do
+  controle (`Grabbable`/ISDK) não funcionou de forma consistente no fluxo
+  `createPanelEntity` (o input é captado mas não arrasta). Resolvido com
+  **controles por botões** (mover ←→↑↓, perto/longe, menor/maior) — determinístico.
 - **Ícone de app sideloaded** não é exibido pelo launcher Nautilus (Developer
   Mode) — limitação do launcher; resolvido ao publicar pela loja Meta.
 - Aviso "nome não disponível" ao **sair pelo botão do controle** do Quest
   (comportamento do Nautilus); sair pelo botão do app não dispara.
+
+> Nota: o acesso de proprietário do Quest foi resolvido (factory reset +
+> reconfiguração com a conta do desenvolvedor). Todas as features estão
+> validadas no device (Quest 3, Horizon OS v207).
 
 ---
 
