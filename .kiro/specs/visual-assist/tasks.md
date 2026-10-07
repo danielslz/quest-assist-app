@@ -49,11 +49,12 @@
     - Anúncio de presença/posição; sem persistência de rostos
     - _Requisitos: 4.1, 4.2, 4.3_
 
-- [ ] 6. Descrição de cena via cloud (opcional)
-  - [ ] 6.1 `CloudSceneDescriber` com consentimento e detecção de conectividade
-    - Envio de JPEG a endpoint configurável; fallback on-device offline
+- [x] 6. Descrição de cena via cloud (opcional)
+  - [x] 6.1 `CloudSceneDescriber` com consentimento e detecção de conectividade
+    - OpenAI-compatible (OkHttp); fallback on-device; tradução EN->PT (ML Kit)
     - _Requisitos: 6.1, 6.2, 6.3, 6.4_
-  - [ ] 6.2 Endpoint de prototipagem via Ramalama (config de dev)
+  - [x] 6.2 Endpoint de prototipagem via Ramalama (config de dev)
+    - config.json (editável via adb); VLM com mmproj (SmolVLM). VALIDADO no device.
     - _Requisitos: 6.1_
 
 - [ ] 7. Configurações e privacidade

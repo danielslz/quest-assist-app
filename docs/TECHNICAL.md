@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-10-05 (UX do painel: preview fluido, controles ocultáveis, posição por botões)
+Última atualização: 2026-10-07 (Tarefa 6: descrição de cena via LLM, validada no device)
 
 ---
 
@@ -151,7 +151,22 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
   `VisionPipeline` (liga/desliga inferência).
 - Controles no `DebugPanel`. Cloud **OFF por padrão** (Requisito 7.4).
 
-### 3.7 Ciclo de vida / plataforma  ✅
+### 3.7 Descrição de cena via LLM multimodal  ✅
+- `cloud/SceneDescriptionProtocol.kt` — monta/parseia requisições
+  **OpenAI-compatible** (`/v1/chat/completions` com imagem base64). **Testado.**
+- `cloud/CloudSceneDescriber.kt` — envia o frame (JPEG) via OkHttp ao endpoint;
+  verifica conectividade; envio **opt-in** (cloud OFF por padrão).
+- `cloud/OnDeviceSceneDescriber.kt` — fallback offline: descreve pelos objetos
+  detectados quando sem rede/cloud. **Testado.**
+- `cloud/SceneTranslator.kt` — traduz a resposta EN→PT **offline** (ML Kit); o
+  VLM leve responde em inglês, traduzimos antes de falar.
+- `settings/AppConfig.kt` — lê `config.json` do armazenamento do app (editável
+  via `adb`, sem recompilar) para o endpoint/modelo do LLM — equivalente a `.env`.
+- Protótipo validado com **Ramalama** servindo **SmolVLM** (VLM com `mmproj`).
+  Lição: o modelo precisa incluir o `mmproj` (projetor multimodal), senão o
+  servidor rejeita imagens ("image input is not supported").
+
+### 3.8 Ciclo de vida / plataforma  ✅
 - `VisualAssistActivity.kt` — entrada; permissões com feedback por áudio;
   passthrough; painel; saída limpa (`finishApp`).
 - Manifest: hand tracking (sem controllers), passthrough, `passthrough-contextual`
@@ -171,6 +186,8 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | Câmera | Passthrough Camera API (Camera2) | — | frames RGB frontais |
 | Detecção objetos | MediaPipe Tasks Vision | 1.0.0 | EfficientDet-Lite0 |
 | OCR | ML Kit Text Recognition | 16.0.1 | leitura de texto (sob demanda) |
+| Tradução | ML Kit Translate | 17.0.3 | descrição EN->PT offline |
+| Descrição de cena | VLM via endpoint OpenAI-compat | — | SmolVLM (Ramalama) p/ protótipo |
 | TTS | sherpa-onnx (VITS/Piper pt-BR) | 1.13.8 | voz offline |
 | UI dos painéis | Jetpack Compose | BOM 2024.09 | painel de debug |
 | SDK Android | compile/target/min SDK | 34 / 34 / 34 | — |
@@ -206,7 +223,7 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | 5.3 | OCR (ML Kit) | ✅ | ler placas/letreiros sob demanda (botão) |
 | 5.4 | **Detecção de pessoas dedicada** | ⏳ | presença (sem identificação) |
 | 4.2 | **Áudio espacial (beep direcional)** | ⏳ | requer asset .wav mono 48kHz |
-| 6 | **Descrição de cena via cloud (LLM)** | ⏳ | opt-in; fallback offline; Ramalama p/ protótipo |
+| 6 | Descrição de cena via LLM | ✅ | OpenAI-compat; fallback offline; tradução pt; SmolVLM/Ramalama |
 | 7 | Configurações | ✅ | verbosidade, limiar, on/off (painel); cloud OFF default |
 | — | Preview fluido no painel | ✅ | preview ~15fps desacoplado da inferência |
 | 8 | Empacotamento / publicação | ⏳ | split ABI, release, loja Meta |
@@ -241,9 +258,10 @@ Lógica pura coberta por JUnit (rodar na `quest-dev`):
 ```bash
 distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:testDebugUnitTest'
 ```
-Cobertura atual (26 testes): `ResolutionPolicy`, `DirectionMapper`,
+Cobertura atual (32 testes): `ResolutionPolicy`, `DirectionMapper`,
 `AnnouncementQueue` (prioridade, debounce, TTL, fila cheia),
-`AudioFeedbackManager` (fluxo serial), `Settings` (defaults, validação de limiar).
+`AudioFeedbackManager` (fluxo serial), `Settings` (defaults/validação),
+`SceneDescriptionProtocol` (payload/parse) e `OnDeviceSceneDescriber` (fallback).
 
 ## 9. Estrutura do código
 ```
@@ -255,6 +273,8 @@ app/src/main/java/com/pesquisa/visualassist/
              PersonDetector (stub — Tarefa 5.4)
   audio/     AudioFeedbackManager, AnnouncementQueue, SpeechEngine, SherpaTtsEngine
   settings/  Settings (puro), SettingsStore (persistência + observável)
+  cloud/     SceneDescriptionProtocol, CloudSceneDescriber, OnDeviceSceneDescriber,
+             SceneTranslator; AppConfig (config.json)
   ui/        DebugPanel
 app/src/main/assets/  models/ (tflite)  tts/ (voz VITS pt-BR)
 .kiro/specs/visual-assist/  requirements.md, design.md, tasks.md

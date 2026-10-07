@@ -16,6 +16,9 @@ Implementadas ✅
   relativa ("cadeira à sua esquerda") e rótulos em português
 - **Leitura de texto (OCR)** sob demanda (ML Kit) — botão "Ler texto" lê placas,
   letreiros e rótulos por voz
+- **Descrição de cena** sob demanda via LLM multimodal (opt-in): botão "Descrever"
+  envia o frame a um endpoint OpenAI-compatible, traduz para pt (offline) e lê;
+  com fallback offline (objetos detectados) quando sem rede
 - **Voz offline em pt-BR** (sherpa-onnx VITS/Piper) — o Quest não tem TTS de sistema
 - **Fila de áudio inteligente**: prioridade, debounce, descarte de anúncios
   obsoletos (TTL) e seleção por relevância (não fala demais)
@@ -25,8 +28,8 @@ Implementadas ✅
 - **Hand tracking** (funciona sem controllers) · **100% offline** · sem persistir frames
 
 Planejadas ⏳
-- Detecção de pessoas (presença), áudio espacial, descrição de cena via LLM
-  (opt-in). Ver roadmap em `docs/TECHNICAL.md`.
+- Detecção de pessoas dedicada (presença), áudio espacial, empacotamento/publicação.
+  Ver roadmap em `docs/TECHNICAL.md`.
 
 ## Documentação
 - **Técnica (arquitetura, tecnologias, roadmap)**: [`docs/TECHNICAL.md`](docs/TECHNICAL.md)
