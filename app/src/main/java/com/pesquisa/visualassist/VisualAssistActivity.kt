@@ -76,6 +76,8 @@ class VisualAssistActivity : AppSystemActivity() {
     vision = VisionPipeline(this, appScope)
     camera = CameraController(this)
     settings = com.pesquisa.visualassist.settings.SettingsStore(this)
+    // Config externa opcional (config.json via adb) — sobrescreve endpoint/modelo cloud.
+    com.pesquisa.visualassist.settings.AppConfig.applyIfPresent(this, settings)
     // Detector de objetos on-device (Tarefa 5.2)
     objectDetector = com.pesquisa.visualassist.vision.ObjectDetector(this)
     vision.register(objectDetector)
