@@ -42,6 +42,7 @@ import com.pesquisa.visualassist.vision.OverlayRenderer
 fun DebugPanel(
   settings: SettingsStore,
   onReadText: () -> Unit = {},
+  onDescribeScene: () -> Unit = {},
   onClose: () -> Unit = {},
   onNearer: () -> Unit = {},
   onFarther: () -> Unit = {},
@@ -100,6 +101,8 @@ fun DebugPanel(
           }
           Text("  Detecção", color = Color.White, fontSize = 12.sp)
           Switch(checked = s.objectDetectionEnabled, onCheckedChange = { on -> settings.update { it.copy(objectDetectionEnabled = on) } })
+          Text("  Nuvem", color = Color.White, fontSize = 12.sp)
+          Switch(checked = s.cloudEnabled, onCheckedChange = { on -> settings.update { it.copy(cloudEnabled = on) } })
         }
         // Confiança
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -139,6 +142,9 @@ fun DebugPanel(
     ) {
       Button(onClick = onReadText, modifier = Modifier.weight(1f), contentPadding = pad) {
         Text("Ler texto", fontSize = 13.sp)
+      }
+      Button(onClick = onDescribeScene, modifier = Modifier.weight(1f), contentPadding = pad) {
+        Text("Descrever", fontSize = 13.sp)
       }
       Button(onClick = { showSettings = !showSettings }, modifier = Modifier.weight(1f), contentPadding = pad) {
         Text(if (showSettings) "Ocultar" else "Ajustes", fontSize = 13.sp)

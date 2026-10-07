@@ -80,6 +80,7 @@ dependencies {
 
   // Testes
   testImplementation(libs.junit)
+  testImplementation("org.json:json:20260814") // impl real de org.json nos unit tests
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
 }

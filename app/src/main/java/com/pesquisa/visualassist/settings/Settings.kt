@@ -17,6 +17,10 @@ data class Settings(
   val objectDetectionEnabled: Boolean = true,
   /** Modo cloud (descrição de cena via LLM) — OFF por padrão (Requisito 7.4). */
   val cloudEnabled: Boolean = false,
+  /** Endpoint do LLM multimodal (OpenAI-compatible). Vazio = não configurado. */
+  val cloudEndpoint: String = "",
+  /** Nome do modelo multimodal no endpoint. */
+  val cloudModel: String = "llava",
 ) {
   companion object {
     const val MIN_CONFIDENCE = 0.1f

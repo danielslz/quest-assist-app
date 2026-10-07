@@ -43,6 +43,8 @@ class SettingsStore(context: Context) {
     ),
     objectDetectionEnabled = prefs.getBoolean(KEY_OBJ_ENABLED, true),
     cloudEnabled = prefs.getBoolean(KEY_CLOUD, false),
+    cloudEndpoint = prefs.getString(KEY_CLOUD_ENDPOINT, "") ?: "",
+    cloudModel = prefs.getString(KEY_CLOUD_MODEL, "llava") ?: "llava",
   )
 
   private fun save(s: Settings) {
@@ -51,6 +53,8 @@ class SettingsStore(context: Context) {
       .putFloat(KEY_CONFIDENCE, s.confidenceThreshold)
       .putBoolean(KEY_OBJ_ENABLED, s.objectDetectionEnabled)
       .putBoolean(KEY_CLOUD, s.cloudEnabled)
+      .putString(KEY_CLOUD_ENDPOINT, s.cloudEndpoint)
+      .putString(KEY_CLOUD_MODEL, s.cloudModel)
       .apply()
   }
 
@@ -59,5 +63,7 @@ class SettingsStore(context: Context) {
     private const val KEY_CONFIDENCE = "confidence"
     private const val KEY_OBJ_ENABLED = "object_detection_enabled"
     private const val KEY_CLOUD = "cloud_enabled"
+    private const val KEY_CLOUD_ENDPOINT = "cloud_endpoint"
+    private const val KEY_CLOUD_MODEL = "cloud_model"
   }
 }

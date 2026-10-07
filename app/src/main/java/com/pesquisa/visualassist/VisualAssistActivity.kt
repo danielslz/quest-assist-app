@@ -139,6 +139,7 @@ class VisualAssistActivity : AppSystemActivity() {
             DebugPanel(
               settings = settings,
               onReadText = { readText() },
+              onDescribeScene = { describeScene() },
               onClose = { finishApp() },
               onNearer = { movePanel(dz = -0.3f) },
               onFarther = { movePanel(dz = 0.3f) },
@@ -278,6 +279,44 @@ class VisualAssistActivity : AppSystemActivity() {
   private fun scalePanel(factor: Float) {
     panelScale = (panelScale * factor).coerceIn(0.5f, 2.5f)
     panelEntity?.setComponent(com.meta.spatial.toolkit.Scale(Vector3(panelScale, panelScale, panelScale)))
+  }
+
+  /**
+   * Descrição de cena sob demanda (Tarefa 6). Usa a nuvem se habilitada +
+   * conectividade; senão, descreve pelos objetos detectados (offline).
+   * Requisitos: 6.1, 6.2, 6.3, 6.4
+   */
+  private fun describeScene() {
+    val cfg = settings.current
+    val frame = lastFrame
+    // Fallback offline: cloud desligado, sem endpoint, sem rede ou sem frame.
+    val describer = if (cfg.cloudEnabled && cfg.cloudEndpoint.isNotBlank() && frame != null)
+      com.pesquisa.visualassist.cloud.CloudSceneDescriber(this, cfg.cloudEndpoint, cfg.cloudModel)
+    else null
+
+    if (describer == null || !describer.hasConnectivity()) {
+      // Offline / sem consentimento → descrição on-device pelos objetos.
+      val desc = com.pesquisa.visualassist.cloud.OnDeviceSceneDescriber.describe(
+        com.pesquisa.visualassist.vision.DebugFrameState.detections
+      )
+      val modo = if (!cfg.cloudEnabled) "" else " (modo offline)"
+      audio.announce(desc + modo)
+      return
+    }
+
+    audio.announce("Descrevendo a cena.")
+    val bitmap = YuvUtils.nv21ToBitmap(frame!!.yuv, frame.width, frame.height)
+    describer.describe(
+      bitmap,
+      onResult = { audio.announce(it) },
+      onError = { msg ->
+        // Em erro de nuvem, cai para o on-device.
+        val desc = com.pesquisa.visualassist.cloud.OnDeviceSceneDescriber.describe(
+          com.pesquisa.visualassist.vision.DebugFrameState.detections
+        )
+        audio.announce("$msg $desc")
+      },
+    )
   }
 
   /** Encerra o app de forma limpa (botão do painel de debug). */
