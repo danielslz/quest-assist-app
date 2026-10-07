@@ -12,6 +12,7 @@ composeBom = "2024.09.03"
 coroutines = "1.8.1"
 # ML / visão on-device
 mlkitText = "16.0.1"
+mlkitTranslate = "17.0.3"
 mediapipeTasksVision = "1.0.0"
 onnxruntimeAndroid = "1.30.0"
 sherpaOnnx = "1.13.8"
@@ -38,6 +39,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 
 # ML / visão on-device
 mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkitText" }
+mlkit-translate = { group = "com.google.mlkit", name = "translate", version.ref = "mlkitTranslate" }
 mediapipe-tasks-vision = { group = "com.google.mediapipe", name = "tasks-vision", version.ref = "mediapipeTasksVision" }
 onnxruntime-android = { group = "com.microsoft.onnxruntime", name = "onnxruntime-android", version.ref = "onnxruntimeAndroid" }
 sherpa-onnx = { group = "com.github.k2-fsa", name = "sherpa-onnx", version.ref = "sherpaOnnx" }

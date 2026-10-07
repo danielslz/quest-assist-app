@@ -12,12 +12,11 @@ import org.json.JSONObject
  */
 object SceneDescriptionProtocol {
 
-  /** Prompt padrão para descrição de cena acessível (conciso, em português). */
+  /** Prompt para descrição de cena acessível. A resposta é traduzida p/ pt depois. */
   const val DEFAULT_PROMPT =
-    "Responda SOMENTE em português do Brasil. Descreva em 1 ou 2 frases curtas o " +
-      "ambiente e os principais objetos e pessoas visíveis nesta imagem, para uma " +
-      "pessoa com deficiência visual, priorizando locomoção e segurança. " +
-      "Não escreva em inglês."
+    "Briefly describe, in one or two short sentences, the environment and the main " +
+      "objects and people visible in this image, to help a visually impaired person " +
+      "move safely. Be concise and objective."
 
   /**
    * Monta o corpo JSON da requisição.

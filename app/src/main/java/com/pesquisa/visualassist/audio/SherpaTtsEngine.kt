@@ -138,7 +138,7 @@ class SherpaTtsEngine(
     }
     worker.execute {
       try {
-        val audio = engine.generate(text = text, sid = 0, speed = 0.9f)
+        val audio = engine.generate(text = text, sid = 0, speed = 0.82f)
         at.setVolume(AudioTrack.getMaxVolume())
         at.play()
         at.write(audio.samples, 0, audio.samples.size, AudioTrack.WRITE_BLOCKING)

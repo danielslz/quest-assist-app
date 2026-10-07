@@ -67,6 +67,7 @@ dependencies {
 
   // ML / visão on-device
   implementation(libs.mlkit.text.recognition)   // OCR (Requisito 3)
+  implementation(libs.mlkit.translate)          // tradução EN->PT offline (descrição de cena)
   implementation(libs.mediapipe.tasks.vision)    // objetos/pessoas (Requisitos 2, 4)
   // NOTA: onnxruntime-android removido — o sherpa-onnx já embarca o ONNX Runtime
   // (evita duplicar libonnxruntime.so). Detecção de objetos usará MediaPipe;

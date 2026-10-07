@@ -51,6 +51,7 @@ class VisualAssistActivity : AppSystemActivity() {
   private lateinit var vision: VisionPipeline
   private lateinit var camera: CameraController
   private val textReader = com.pesquisa.visualassist.vision.TextReader()
+  private val translator = com.pesquisa.visualassist.cloud.SceneTranslator()
   private lateinit var settings: com.pesquisa.visualassist.settings.SettingsStore
   private lateinit var objectDetector: com.pesquisa.visualassist.vision.ObjectDetector
 
@@ -312,7 +313,7 @@ class VisualAssistActivity : AppSystemActivity() {
     val bitmap = YuvUtils.nv21ToBitmap(frame!!.yuv, frame.width, frame.height)
     describer.describe(
       bitmap,
-      onResult = { audio.announce(it) },
+      onResult = { desc -> translator.toPortuguese(desc) { audio.announce(it) } },
       onError = { msg ->
         // Em erro de nuvem, cai para o on-device.
         val desc = com.pesquisa.visualassist.cloud.OnDeviceSceneDescriber.describe(
@@ -336,6 +337,7 @@ class VisualAssistActivity : AppSystemActivity() {
     vision.stop()
     audio.shutdown()
     textReader.close()
+    translator.close()
     appScope.cancel()
   }
 
