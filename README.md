@@ -28,6 +28,9 @@ Implementadas ✅
 - **Hand tracking** (funciona sem controllers) · **100% offline** · sem persistir frames
 
 Planejadas ⏳
+- **Controle acessível por gestos de mão** (próxima): acionar as funções por
+  *microgestures* (toque/deslize do polegar), com confirmação por voz e tutorial
+  falado — para uso sem depender de enxergar os botões.
 - Detecção de pessoas dedicada (presença), áudio espacial, empacotamento/publicação.
   Ver roadmap em `docs/TECHNICAL.md`.
 

@@ -226,9 +226,17 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | 6 | Descrição de cena via LLM | ✅ | OpenAI-compat; fallback offline; tradução pt; SmolVLM/Ramalama |
 | 7 | Configurações | ✅ | verbosidade, limiar, on/off (painel); cloud OFF default |
 | — | Preview fluido no painel | ✅ | preview ~15fps desacoplado da inferência |
+| 9 | Controle acessível por gestos | ⏳ **(próxima)** | microgestures (toque/deslize do polegar) + voz de confirmação + onboarding falado |
 | 8 | Empacotamento / publicação | ⏳ | split ABI, release, loja Meta |
 
 Legenda: ✅ implementado · ⏳ planejado
+
+> **Próxima funcionalidade — controle acessível por gestos.** Os botões do painel
+> exigem visão para mirar (servem para depuração). Para o usuário-alvo (deficiente
+> visual), o acionamento será por *microgestures* nativos do Spatial SDK (toque e
+> deslize do polegar, via `MicrogesturesSystem`/`MicrogestureBits`), com
+> confirmação por voz e um tutorial falado na abertura. Design e tarefas em
+> `.kiro/specs/visual-assist/` (R9, Tarefa 9).
 
 ### Limitações conhecidas
 - **Grab por gesto do painel**: mover/redimensionar o painel pelo gesto do

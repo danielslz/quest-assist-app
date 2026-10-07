@@ -73,3 +73,44 @@
     - _Requisitos: 2.2_
   - [ ] 8.3 Documentar dados que saem do dispositivo (README de privacidade)
     - _Requisitos: 7.3_
+
+- [ ] 9. Controle acessível por gestos de mão (microgestures)  ← PRÓXIMA
+  Motivação: o usuário-alvo (deficiente visual) não consegue usar os botões do
+  painel (precisam de visão para mirar). Os botões continuam existindo para
+  depuração do desenvolvedor; os gestos são a via de uso real.
+  - [ ] 9.1 `GestureActionMapper` (lógica pura, testável sem Android)
+    - Mapeia bit de microgesture (`MicrogestureBits`) → ação do app (enum
+      `AppAction`: DESCRIBE_SCENE, READ_TEXT, TOGGLE_DETECTION, REPEAT_LAST).
+    - Entrada: `changedMicrogestures: Int` (bitmask) → `AppAction?`.
+    - Mapeamento inicial:
+      - `RightMicrogestureTapThumb`  → DESCRIBE_SCENE
+      - `LeftMicrogestureTapThumb`   → READ_TEXT
+      - `RightMicrogestureSwipeRight`→ TOGGLE_DETECTION
+      - `RightMicrogestureSwipeLeft` → REPEAT_LAST
+    - Testes JUnit: cada bit resolve a ação certa; bits desconhecidos → null;
+      bitmask combinada prioriza uma ação (definir ordem determinística).
+    - _Requisitos: novo R9 (ver requirements.md)_
+  - [ ] 9.2 `GestureInputController` (ponte com o SDK)
+    - Registra listener no `MicrogesturesSystem.addListener { state, isFist -> }`
+      (obtido via `systemManager`); traduz com `GestureActionMapper`; invoca o
+      callback de ação na Activity. Guarda o `MicrogestureListenerHandle` e
+      remove no `onDestroy`.
+    - Garantir que hand tracking está habilitado (já há meta-data no manifest).
+    - _Requisitos: R9_
+  - [ ] 9.3 Integração na Activity + feedback por voz de confirmação
+    - Cada ação dispara a função já existente (describeScene, readText, toggle)
+      e fala uma confirmação curta ("Descrevendo a cena...", "Procurando
+      texto...", "Detecção ligada/desligada").
+    - REPEAT_LAST: guardar a última frase falada e repetir.
+    - _Requisitos: R9, 5.1_
+  - [ ] 9.4 Tutorial de voz na abertura (onboarding acessível)
+    - Ao abrir o app (após TTS pronto), narrar os gestos disponíveis uma vez.
+      Texto curto e objetivo. Opção de desligar em Settings (`onboardingSpoken`).
+    - _Requisitos: R9_
+  - [ ] 9.5 (Opcional) Botões físicos do controle como via alternativa
+    - Ler `Controller.buttonState`/`changedButtons` no `onInput`; gatilho direito
+      → DESCRIBE_SCENE; gatilho esquerdo → READ_TEXT. Para quem segura o controle.
+    - _Requisitos: R9_
+  - [ ] 9.6 Validação no device: fazer cada gesto, confirmar ação + voz
+    - Verificar falsos positivos; ajustar quais gestos usar se necessário.
+    - _Requisitos: R9_

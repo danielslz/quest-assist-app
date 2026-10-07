@@ -150,3 +150,48 @@ Comandos de debug úteis:
 - `adb logcat --pid=$(adb shell pidof com.pesquisa.visualassist)`
 - Conceder câmera p/ teste: `adb shell pm grant <pkg> android.permission.CAMERA`
 - Verificar TTS: `adb shell settings get secure tts_default_synth` (Quest = null)
+
+
+## Controle acessível por gestos (microgestures) — design (2026-10-07)
+**Problema:** o painel de botões exige visão para mirar; inútil para o
+usuário-alvo. Precisa de uma via de acionamento 100% não-visual.
+
+**Solução:** microgestures nativos do Spatial SDK (toque/deslize do polegar),
+reconhecidos por hand tracking, com confirmação por voz.
+
+**APIs do SDK (verificadas no classpath v0.14.0):**
+- `com.meta.spatial.toolkit.MicrogesturesSystem` — `addListener { state: Int,
+  isFist: Boolean -> }` retorna `MicrogestureListenerHandle`; `removeListener(h)`.
+  Obtido via `systemManager.findSystem<MicrogesturesSystem>()`.
+- `com.meta.spatial.runtime.MicrogestureBits` — bits dos gestos:
+  `RightMicrogestureTapThumb`, `LeftMicrogestureTapThumb`,
+  `Right/LeftMicrogestureSwipeLeft/Right/Forward/Back`.
+- O `state`/`changedMicrogestures` é um bitmask (`Int`); testar com `and`.
+
+**Camadas (separação lógica pura ↔ Android):**
+- `input/AppAction.kt` — enum puro das ações (DESCRIBE_SCENE, READ_TEXT,
+  TOGGLE_DETECTION, REPEAT_LAST).
+- `input/GestureActionMapper.kt` — **puro, testável**: `map(bits: Int): AppAction?`
+  usando as constantes de `MicrogestureBits` (passadas como parâmetros ou
+  espelhadas em constantes locais para o teste JVM não depender do SDK).
+- `input/GestureInputController.kt` — **Android**: registra/desregistra o listener
+  no `MicrogesturesSystem`, delega ao mapper, chama o callback de ação.
+- `VisualAssistActivity` — conecta a ação à função existente + fala a confirmação.
+
+**Mapeamento inicial (ajustável após teste no device):**
+| Gesto                         | Ação             | Voz                        |
+|-------------------------------|------------------|----------------------------|
+| Tap polegar (direita)         | DESCRIBE_SCENE   | "Descrevendo a cena..."    |
+| Tap polegar (esquerda)        | READ_TEXT        | "Procurando texto..."      |
+| Swipe direita → (mão direita) | TOGGLE_DETECTION | "Detecção ligada/desligada"|
+| Swipe esquerda ← (mão direita)| REPEAT_LAST      | repete a última frase      |
+
+**Onboarding acessível:** ao abrir (após TTS pronto), narrar os gestos uma vez;
+flag `onboardingSpoken` em Settings para não repetir / permitir desligar.
+
+**Restrições de plataforma:**
+- Pinça com **palma para cima é reservada** pelo sistema (menu do Quest) — não usar.
+- Requer hand tracking ativo (já declarado no manifest).
+
+**Via alternativa (opcional):** botões físicos do controle lidos no `onInput`
+via `Controller.buttonState`/`changedButtons` — para quem segura o controle.

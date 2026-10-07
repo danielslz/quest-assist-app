@@ -121,3 +121,26 @@ implantar o app no Quest a partir do meu ambiente configurado.
 3. O projeto DEVE implantar via `adb install`/`./gradlew :app:installDebug` com o Quest
    em modo desenvolvedor.
 4. O projeto NÃO DEVE exigir alterações no sistema imutável do host.
+
+### Requisito 9 — Controle acessível por gestos de mão
+**User Story:** Como pessoa com deficiência visual, quero acionar as funções do
+app (descrever cena, ler texto) sem precisar enxergar ou mirar em botões, usando
+gestos de mão discretos e recebendo confirmação por voz.
+
+**Contexto:** os botões do painel exigem visão para mirar; servem para depuração
+do desenvolvedor. O uso real precisa de uma via não-visual. O Meta Spatial SDK
+expõe *microgestures* nativos (toque e deslize do polegar) via
+`MicrogesturesSystem` / `MicrogestureBits`, reconhecidos por hand tracking.
+
+#### Acceptance Criteria
+1. O sistema DEVE permitir acionar "descrever cena" e "ler texto" por gestos de
+   mão (microgestures), sem depender de mirar em elementos visuais.
+2. O sistema DEVE confirmar por voz cada gesto reconhecido antes/ao executar a
+   ação (ex.: "Descrevendo a cena...").
+3. O sistema DEVE narrar, uma vez na abertura, os gestos disponíveis (onboarding
+   acessível), com opção de desativar essa narração.
+4. O sistema NÃO DEVE usar gestos reservados pela plataforma (ex.: pinça com a
+   palma voltada para cima, reservada para o menu do sistema).
+5. O sistema DEVE remover o listener de gestos no encerramento (sem vazamento).
+6. (Opcional) O sistema PODE oferecer os botões físicos do controle como via
+   alternativa para quem optar por segurá-lo.
