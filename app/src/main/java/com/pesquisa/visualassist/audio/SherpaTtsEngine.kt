@@ -111,13 +111,20 @@ class SherpaTtsEngine(
     // PCM_FLOAT = 4 bytes/sample. Buffer generoso (~1s) para fala contínua,
     // evitando underruns e o modo FAST (inadequado para streaming de TTS).
     val bufBytes = maxOf(minBuf, sampleRate * 4)
+    val attrs = AudioAttributes.Builder()
+      // USAGE_MEDIA (em vez de ASSISTANCE_ACCESSIBILITY) + política de captura
+      // permitida: sem isso, a narração NÃO entra na gravação de tela do Quest
+      // (áudio de acessibilidade é excluído do mix capturável pelo sistema).
+      .setUsage(AudioAttributes.USAGE_MEDIA)
+      .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+      .apply {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+          setAllowedCapturePolicy(AudioAttributes.ALLOW_CAPTURE_BY_ALL)
+        }
+      }
+      .build()
     return AudioTrack.Builder()
-      .setAudioAttributes(
-        AudioAttributes.Builder()
-          .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
-          .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-          .build()
-      )
+      .setAudioAttributes(attrs)
       .setAudioFormat(
         AudioFormat.Builder()
           .setSampleRate(sampleRate)
