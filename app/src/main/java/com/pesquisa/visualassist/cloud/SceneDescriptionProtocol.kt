@@ -14,9 +14,10 @@ object SceneDescriptionProtocol {
 
   /** Prompt padrão para descrição de cena acessível (conciso, em português). */
   const val DEFAULT_PROMPT =
-    "Descreva de forma breve e objetiva, em português, o ambiente e os principais " +
-      "objetos e pessoas visíveis nesta imagem, para uma pessoa com deficiência visual. " +
-      "Priorize o que é útil para locomoção e segurança. Máximo 2 frases."
+    "Responda SOMENTE em português do Brasil. Descreva em 1 ou 2 frases curtas o " +
+      "ambiente e os principais objetos e pessoas visíveis nesta imagem, para uma " +
+      "pessoa com deficiência visual, priorizando locomoção e segurança. " +
+      "Não escreva em inglês."
 
   /**
    * Monta o corpo JSON da requisição.

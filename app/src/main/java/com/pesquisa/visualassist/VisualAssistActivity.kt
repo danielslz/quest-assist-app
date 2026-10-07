@@ -209,11 +209,13 @@ class VisualAssistActivity : AppSystemActivity() {
     camera.start(object : CameraController.ImageAvailableListener {
       override fun onNewImage(image: Image, width: Int, height: Int, finally: () -> Unit) {
         try {
+          val nv21 = YuvUtils.toNv21(image)
+          if (nv21.isEmpty()) return  // frame descartado (buffer reciclado)
           val frame = CameraFrame(
             width = width,
             height = height,
             timestampNs = image.timestamp,
-            yuv = YuvUtils.toNv21(image),
+            yuv = nv21,
             intrinsics = camera.intrinsics,
           )
           lastFrame = frame

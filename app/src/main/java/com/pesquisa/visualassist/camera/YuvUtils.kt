@@ -18,6 +18,17 @@ object YuvUtils {
    * facilmente convertível para outros runtimes.
    */
   fun toNv21(image: Image): ByteArray {
+    return try {
+      toNv21Unsafe(image)
+    } catch (e: IllegalStateException) {
+      // A Image pode ser reciclada pelo ImageReader durante a leitura
+      // ("buffer is inaccessible"). Nesse caso, devolve vazio em vez de crashar.
+      android.util.Log.w("YuvUtils", "frame descartado: ${e.message}")
+      ByteArray(0)
+    }
+  }
+
+  private fun toNv21Unsafe(image: Image): ByteArray {
     val width = image.width
     val height = image.height
     val ySize = width * height
