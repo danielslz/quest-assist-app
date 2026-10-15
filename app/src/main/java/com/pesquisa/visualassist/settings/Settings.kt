@@ -21,6 +21,8 @@ data class Settings(
   val cloudEndpoint: String = "",
   /** Nome do modelo multimodal no endpoint. */
   val cloudModel: String = "llava",
+  /** Tutorial de abertura já exibido (não repetir automaticamente). */
+  val onboardingDone: Boolean = false,
 ) {
   companion object {
     const val MIN_CONFIDENCE = 0.1f

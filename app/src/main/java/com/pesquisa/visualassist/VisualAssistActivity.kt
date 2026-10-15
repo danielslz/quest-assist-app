@@ -34,6 +34,7 @@ import com.pesquisa.visualassist.vision.VisionPipeline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import com.pesquisa.visualassist.input.AppAction
 
 /**
  * Activity principal do app de assistência visual (Meta Spatial SDK).
@@ -64,6 +65,134 @@ class VisualAssistActivity : AppSystemActivity() {
   /** Distância (Z) e escala atuais do painel, ajustadas pelos botões. */
   private var panelDistance = 1.5f
   private var panelScale = 1.0f
+
+  /** Última fala relevante, para a ação "repetir" (Tarefa 9). */
+  @Volatile private var lastSpokenText: String? = null
+
+  /** Modo tutorial interativo: botões só anunciam sua função, sem executá-la. */
+  @Volatile private var tutorialMode = false
+  private val tutorialPracticed = mutableSetOf<AppAction>()
+  private val tutorialTargets = setOf(
+    AppAction.DESCRIBE_SCENE,
+    AppAction.READ_TEXT,
+    AppAction.TOGGLE_DETECTION,
+    AppAction.REPEAT_LAST,
+  )
+
+  /**
+   * Executa uma ação de entrada acessível (botões agora; microgestures depois),
+   * sempre com confirmação por voz. Tarefa 9.3/9.5.
+   */
+  private fun runAction(action: AppAction) {
+    // Publica no HUD do painel qual botão/ação foi acionado (feedback visual).
+    com.pesquisa.visualassist.vision.DebugFrameState.updateLastAction(hudLabel(action))
+
+    // O clique do analógico esquerdo sempre abre/fecha o tutorial.
+    if (action == AppAction.TUTORIAL) { toggleTutorial(); return }
+    // Clique do analógico direito fecha o app (com confirmação dupla).
+    if (action == AppAction.CLOSE_APP) { confirmClose(); return }
+    // Dentro do tutorial, os botões apenas ENSINAM sua função (não executam).
+    if (tutorialMode) { practiceInTutorial(action); return }
+
+    when (action) {
+      AppAction.DESCRIBE_SCENE -> describeScene()
+      AppAction.READ_TEXT -> readText()
+      AppAction.TOGGLE_DETECTION -> {
+        val novo = !vision.detectionEnabled
+        vision.detectionEnabled = novo
+        settings.update { it.copy(objectDetectionEnabled = novo) }
+        speakAndRemember(if (novo) "Detecção de objetos ligada." else "Detecção de objetos desligada.")
+      }
+      AppAction.REPEAT_LAST -> {
+        val ultimo = lastSpokenText
+        if (ultimo.isNullOrBlank()) audio.announce("Nada para repetir.")
+        else audio.announce(ultimo)
+      }
+      AppAction.TUTORIAL, AppAction.CLOSE_APP -> {} // já tratados acima
+    }
+  }
+
+  /** Rótulo legível para o HUD do painel. */
+  private fun hudLabel(action: AppAction): String = when (action) {
+    AppAction.DESCRIBE_SCENE -> "Botão A → Descrever cena"
+    AppAction.READ_TEXT -> "Botão X → Ler texto"
+    AppAction.TOGGLE_DETECTION -> "Botão B → Liga/desliga detecção"
+    AppAction.REPEAT_LAST -> "Botão Y → Repetir última"
+    AppAction.TUTORIAL -> "Analógico esquerdo → Tutorial"
+    AppAction.CLOSE_APP -> "Analógico direito → Fechar"
+  }
+
+  /** Confirmação dupla para fechar: 1º clique avisa, 2º (em até 4s) encerra. */
+  @Volatile private var closeArmedAt = 0L
+  private fun confirmClose() {
+    val now = System.currentTimeMillis()
+    if (now - closeArmedAt <= 4000L) {
+      audio.announce("Fechando o aplicativo.")
+      finishApp()
+    } else {
+      closeArmedAt = now
+      audio.announce("Aperte o analógico direito de novo para fechar o aplicativo.")
+    }
+  }
+
+  /** Entra/sai do modo tutorial interativo (clique do analógico esquerdo). */
+  private fun toggleTutorial() {
+    tutorialMode = !tutorialMode
+    if (tutorialMode) {
+      tutorialPracticed.clear()
+      // Silencia detecções e desliga a inferência: nada "fala sozinho" durante
+      // o tutorial, evitando confusão (feedback do usuário).
+      audio.detectionsMuted = true
+      vision.detectionEnabled = false
+      // Frases curtas unidas numa só locução pausada (não é descartada pela
+      // fila curta e soa mais lenta que texto corrido).
+      audio.announceSequence(
+        listOf(
+          "Modo tutorial",
+          "Aperte cada botão para conhecer sua função",
+          "Os botões são A, X, B e Y",
+          "Quando apertar todos, o tutorial termina",
+          "Para sair antes, aperte o analógico esquerdo",
+        )
+      )
+    } else {
+      endTutorial("Tutorial encerrado.")
+    }
+  }
+
+  /** Sai do modo tutorial e restaura detecção/anúncios conforme as configurações. */
+  private fun endTutorial(mensagem: String) {
+    tutorialMode = false
+    audio.detectionsMuted = false
+    vision.detectionEnabled = settings.current.objectDetectionEnabled
+    // Marca o onboarding como concluído: não repete o tutorial automaticamente
+    // nas próximas aberturas (fica disponível no botão de Ajustes e no analógico).
+    if (!settings.current.onboardingDone) settings.update { it.copy(onboardingDone = true) }
+    audio.announce(mensagem)
+  }
+
+  /** Dentro do tutorial: anuncia a função do botão e acompanha o progresso. */
+  private fun practiceInTutorial(action: AppAction) {
+    val descricao = when (action) {
+      AppAction.DESCRIBE_SCENE -> "Botão A: descreve a cena à sua frente."
+      AppAction.READ_TEXT -> "Botão X: lê o texto que estiver à vista."
+      AppAction.TOGGLE_DETECTION -> "Botão B: liga ou desliga o aviso de objetos."
+      AppAction.REPEAT_LAST -> "Botão Y: repete a última mensagem."
+      AppAction.TUTORIAL -> return
+      AppAction.CLOSE_APP -> return
+    }
+    audio.announce(descricao)
+    tutorialPracticed.add(action)
+    if (tutorialPracticed.containsAll(tutorialTargets)) {
+      endTutorial("Você conheceu todos os botões. Tutorial concluído.")
+    }
+  }
+
+  /** Fala e guarda a frase como "última fala" para a ação de repetir. */
+  private fun speakAndRemember(text: String) {
+    lastSpokenText = text
+    audio.announce(text)
+  }
 
   /** VRFeature é obrigatório para o AppSystemActivity inicializar o render de VR. */
   override fun registerFeatures(): List<SpatialFeature> {
@@ -117,8 +246,22 @@ class VisualAssistActivity : AppSystemActivity() {
     // Enquanto o asset não existe, NÃO carregamos (SceneAudioAsset lança assert nativo
     // se o arquivo faltar). A direção continua sendo indicada pelo pan estéreo do TTS.
 
-    // Boas-vindas por áudio e fluxo de permissão.
-    audio.announce("Assistente visual iniciado.")
+    // Onboarding acessível (Tarefa 9.4): no PRIMEIRO uso, entra no tutorial
+    // interativo automaticamente. Nas aberturas seguintes, só uma dica curta de
+    // como rechamá-lo (não repete o tutorial inteiro — respeita o usuário
+    // experiente). O tutorial também fica num botão em Ajustes.
+    if (!settings.current.onboardingDone) {
+      toggleTutorial()
+    } else {
+      audio.announce("Para ouvir o tutorial, clique no analógico esquerdo.", com.pesquisa.visualassist.audio.AudioPriority.NORMAL)
+    }
+
+    // Entrada acessível por botões do controle (Tarefa 9.5): dispara ações
+    // (descrever/ler/alternar/repetir) com confirmação por voz, sem depender
+    // de mirar nos botões do painel.
+    systemManager.registerSystem(
+      com.pesquisa.visualassist.input.ButtonInputSystem { action -> runAction(action) }
+    )
 
     // Painel de debug: câmera + bounding boxes + controles.
     // Posição/tamanho são controlados por botões no painel (determinístico e
@@ -153,6 +296,7 @@ class VisualAssistActivity : AppSystemActivity() {
               onUp = { movePanel(dy = 0.2f) },
               onDown = { movePanel(dy = -0.2f) },
               onCenter = { centerPanel() },
+              onTutorial = { if (!tutorialMode) toggleTutorial() },
             )
           }
         }
@@ -237,7 +381,7 @@ class VisualAssistActivity : AppSystemActivity() {
         }
       }
     })
-    audio.announce("Câmera ativa.")
+    audio.announce("Câmera ativa.", com.pesquisa.visualassist.audio.AudioPriority.NORMAL)
   }
 
   /** OCR sob demanda (Requisitos 3.1-3.3): lê o texto do último frame por voz. */
@@ -256,7 +400,7 @@ class VisualAssistActivity : AppSystemActivity() {
         audio.announce("Nenhum texto detectado.")
       } else {
         // Texto reconhecido: fala com prioridade alta (ação explícita do usuário).
-        audio.announce(text)
+        speakAndRemember(text)
       }
       reading = false
     }
@@ -305,7 +449,7 @@ class VisualAssistActivity : AppSystemActivity() {
         com.pesquisa.visualassist.vision.DebugFrameState.detections
       )
       val modo = if (!cfg.cloudEnabled) "" else " (modo offline)"
-      audio.announce(desc + modo)
+      speakAndRemember(desc + modo)
       return
     }
 
@@ -313,13 +457,14 @@ class VisualAssistActivity : AppSystemActivity() {
     val bitmap = YuvUtils.nv21ToBitmap(frame!!.yuv, frame.width, frame.height)
     describer.describe(
       bitmap,
-      onResult = { desc -> translator.toPortuguese(desc) { audio.announce(it) } },
+      onResult = { desc -> translator.toPortuguese(desc) { speakAndRemember(it) } },
       onError = { msg ->
         // Em erro de nuvem, cai para o on-device.
         val desc = com.pesquisa.visualassist.cloud.OnDeviceSceneDescriber.describe(
           com.pesquisa.visualassist.vision.DebugFrameState.detections
         )
         audio.announce("$msg $desc")
+        lastSpokenText = desc
       },
     )
   }

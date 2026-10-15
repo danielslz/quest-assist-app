@@ -19,11 +19,20 @@ object DebugFrameState {
   var detections by mutableStateOf<List<Detection>>(emptyList())
     private set
 
+  /** Último acionamento (botão → ação), exibido como HUD no topo do painel. */
+  var lastActionLabel by mutableStateOf<String?>(null)
+    private set
+
   fun updateCamera(bitmap: Bitmap) {
     cameraFrame = bitmap
   }
 
   fun updateDetections(list: List<Detection>) {
     detections = list
+  }
+
+  /** Publica o rótulo do último acionamento (ex.: "Botão A → Descrever cena"). */
+  fun updateLastAction(label: String) {
+    lastActionLabel = label
   }
 }

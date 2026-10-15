@@ -20,6 +20,10 @@ Implementadas ✅
   envia o frame a um endpoint OpenAI-compatible, traduz para pt (offline) e lê;
   com fallback offline (objetos detectados) quando sem rede
 - **Voz offline em pt-BR** (sherpa-onnx VITS/Piper) — o Quest não tem TTS de sistema
+- **Controle acessível por botões do controle** — acionar as funções sem precisar
+  mirar nos botões do painel (A descrever, X ler texto, B liga/desliga detecção,
+  Y repetir, analógicos para tutorial/fechar), com confirmação por voz e um
+  **tutorial interativo** falado
 - **Fila de áudio inteligente**: prioridade, debounce, descarte de anúncios
   obsoletos (TTL) e seleção por relevância (não fala demais)
 - **Painel de debug** com a câmera + bounding boxes (preview fluido) e botões
@@ -28,9 +32,8 @@ Implementadas ✅
 - **Hand tracking** (funciona sem controllers) · **100% offline** · sem persistir frames
 
 Planejadas ⏳
-- **Controle acessível por gestos de mão** (próxima): acionar as funções por
-  *microgestures* (toque/deslize do polegar), com confirmação por voz e tutorial
-  falado — para uso sem depender de enxergar os botões.
+- **Microgestures** (toque/deslize do polegar) reaproveitando o fluxo de ações já
+  pronto — alternativa sem controle ao acionamento por botões.
 - Detecção de pessoas dedicada (presença), áudio espacial, empacotamento/publicação.
   Ver roadmap em `docs/TECHNICAL.md`.
 

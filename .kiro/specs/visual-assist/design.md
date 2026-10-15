@@ -195,3 +195,23 @@ flag `onboardingSpoken` em Settings para não repetir / permitir desligar.
 
 **Via alternativa (opcional):** botões físicos do controle lidos no `onInput`
 via `Controller.buttonState`/`changedButtons` — para quem segura o controle.
+
+
+### Implementação real (2026-10-14) — botões primeiro
+Decidimos validar o fluxo de acionamento pelos **botões do controle** antes dos
+microgestures (mais confiável para iterar a UX). O que foi entregue e validado no
+device:
+- `input/AppAction` (enum), `input/ButtonActionMapper` (puro, 7 testes),
+  `input/ButtonInputSystem` (`SystemBase`, edge detection via `Controller`).
+- Mapeamento final: A=descrever, X=ler texto, B=liga/desliga detecção, Y=repetir,
+  clique analógico esquerdo=tutorial, clique analógico direito=fechar (confirmação
+  dupla). **Gatilhos foram evitados** porque conflitam com a seleção de itens na UI.
+- **Tutorial interativo**: cada botão só anuncia a função até praticar todos; roda
+  só na 1ª abertura (`onboardingDone` em Settings); rechamável pelo analógico
+  esquerdo e por botão "Ouvir tutorial" em Ajustes. Detecções silenciadas durante
+  o tutorial. Fala como locução única pausada (a fila `maxQueue=3` descartava
+  frases separadas).
+- **HUD** no topo do painel: "Botão X → Ação" (feedback visual imediato).
+
+Pendente: `GestureInputController` ligando o `MicrogesturesSystem` ao mesmo
+`runAction`/`AppAction` (a base pura já serve), mantendo botões como alternativa.

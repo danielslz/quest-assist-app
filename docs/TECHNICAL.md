@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-10-07 (Tarefa 6: descrição de cena via LLM, validada no device)
+Última atualização: 2026-10-14 (Tarefa 9: controle acessível por botões + tutorial interativo, validado no device)
 
 ---
 
@@ -166,6 +166,25 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
   Lição: o modelo precisa incluir o `mmproj` (projetor multimodal), senão o
   servidor rejeita imagens ("image input is not supported").
 
+### 3.9 Controle acessível por botões/gestos  🟡
+Problema: os botões do painel exigem visão para mirar — inúteis para o
+usuário-alvo. Solução: acionamento por **controle físico** (feito) e, no
+futuro, **microgestures** (pendente), sempre com confirmação por voz.
+
+- `input/AppAction.kt` — enum puro das ações.
+- `input/ButtonActionMapper.kt` — **puro, testado**: bitmask de botões → ação.
+- `input/ButtonInputSystem.kt` — `SystemBase` que lê o `Controller` por frame
+  (edge detection via `buttonState`) e dispara a ação.
+- Mapeamento: **A** descrever · **X** ler texto · **B** liga/desliga detecção ·
+  **Y** repetir · **clique analógico esq.** tutorial · **clique analógico dir.**
+  fechar (confirmação dupla). Gatilhos evitados (conflitam com seleção de UI).
+- **Tutorial interativo** (onboarding): cada botão só anuncia sua função até o
+  usuário praticar todos; roda só na 1ª abertura (`onboardingDone`); rechamável
+  pelo analógico esq. e por botão em Ajustes. Detecções são silenciadas durante
+  o tutorial. Fala como locução única pausada (a fila é curta, maxQueue=3).
+- **HUD** no topo do painel mostra o último acionamento (feedback visual).
+- Pendente: migrar o mesmo fluxo para microgestures (`MicrogesturesSystem`).
+
 ### 3.8 Ciclo de vida / plataforma  ✅
 - `VisualAssistActivity.kt` — entrada; permissões com feedback por áudio;
   passthrough; painel; saída limpa (`finishApp`).
@@ -226,10 +245,10 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 | 6 | Descrição de cena via LLM | ✅ | OpenAI-compat; fallback offline; tradução pt; SmolVLM/Ramalama |
 | 7 | Configurações | ✅ | verbosidade, limiar, on/off (painel); cloud OFF default |
 | — | Preview fluido no painel | ✅ | preview ~15fps desacoplado da inferência |
-| 9 | Controle acessível por gestos | ⏳ **(próxima)** | microgestures (toque/deslize do polegar) + voz de confirmação + onboarding falado |
+| 9 | Controle acessível (botões) | 🟡 parcial | botões A/X/B/Y + analógicos; tutorial interativo; HUD. Microgestures pendentes |
 | 8 | Empacotamento / publicação | ⏳ | split ABI, release, loja Meta |
 
-Legenda: ✅ implementado · ⏳ planejado
+Legenda: ✅ implementado · 🟡 parcial · ⏳ planejado
 
 > **Próxima funcionalidade — controle acessível por gestos.** Os botões do painel
 > exigem visão para mirar (servem para depuração). Para o usuário-alvo (deficiente
@@ -266,10 +285,11 @@ Lógica pura coberta por JUnit (rodar na `quest-dev`):
 ```bash
 distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:testDebugUnitTest'
 ```
-Cobertura atual (32 testes): `ResolutionPolicy`, `DirectionMapper`,
+Cobertura atual (40 testes): `ResolutionPolicy`, `DirectionMapper`,
 `AnnouncementQueue` (prioridade, debounce, TTL, fila cheia),
 `AudioFeedbackManager` (fluxo serial), `Settings` (defaults/validação),
-`SceneDescriptionProtocol` (payload/parse) e `OnDeviceSceneDescriber` (fallback).
+`SceneDescriptionProtocol` (payload/parse), `OnDeviceSceneDescriber` (fallback)
+e `ButtonActionMapper` (bit→ação, acessibilidade).
 
 ## 9. Estrutura do código
 ```
@@ -283,6 +303,7 @@ app/src/main/java/com/pesquisa/visualassist/
   settings/  Settings (puro), SettingsStore (persistência + observável)
   cloud/     SceneDescriptionProtocol, CloudSceneDescriber, OnDeviceSceneDescriber,
              SceneTranslator; AppConfig (config.json)
+  input/     AppAction, ButtonActionMapper (puro), ButtonInputSystem (controle)
   ui/        DebugPanel
 app/src/main/assets/  models/ (tflite)  tts/ (voz VITS pt-BR)
 .kiro/specs/visual-assist/  requirements.md, design.md, tasks.md

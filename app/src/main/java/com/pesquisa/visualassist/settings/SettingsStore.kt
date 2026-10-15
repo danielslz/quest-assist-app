@@ -45,6 +45,7 @@ class SettingsStore(context: Context) {
     cloudEnabled = prefs.getBoolean(KEY_CLOUD, false),
     cloudEndpoint = prefs.getString(KEY_CLOUD_ENDPOINT, "") ?: "",
     cloudModel = prefs.getString(KEY_CLOUD_MODEL, "llava") ?: "llava",
+    onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, false),
   )
 
   private fun save(s: Settings) {
@@ -55,6 +56,7 @@ class SettingsStore(context: Context) {
       .putBoolean(KEY_CLOUD, s.cloudEnabled)
       .putString(KEY_CLOUD_ENDPOINT, s.cloudEndpoint)
       .putString(KEY_CLOUD_MODEL, s.cloudModel)
+      .putBoolean(KEY_ONBOARDING_DONE, s.onboardingDone)
       .apply()
   }
 
@@ -65,5 +67,6 @@ class SettingsStore(context: Context) {
     private const val KEY_CLOUD = "cloud_enabled"
     private const val KEY_CLOUD_ENDPOINT = "cloud_endpoint"
     private const val KEY_CLOUD_MODEL = "cloud_model"
+    private const val KEY_ONBOARDING_DONE = "onboarding_done"
   }
 }

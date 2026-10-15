@@ -74,43 +74,40 @@
   - [ ] 8.3 Documentar dados que saem do dispositivo (README de privacidade)
     - _Requisitos: 7.3_
 
-- [ ] 9. Controle acessível por gestos de mão (microgestures)  ← PRÓXIMA
+- [~] 9. Controle acessível por gestos/botões
   Motivação: o usuário-alvo (deficiente visual) não consegue usar os botões do
-  painel (precisam de visão para mirar). Os botões continuam existindo para
-  depuração do desenvolvedor; os gestos são a via de uso real.
-  - [ ] 9.1 `GestureActionMapper` (lógica pura, testável sem Android)
-    - Mapeia bit de microgesture (`MicrogestureBits`) → ação do app (enum
-      `AppAction`: DESCRIBE_SCENE, READ_TEXT, TOGGLE_DETECTION, REPEAT_LAST).
-    - Entrada: `changedMicrogestures: Int` (bitmask) → `AppAction?`.
-    - Mapeamento inicial:
-      - `RightMicrogestureTapThumb`  → DESCRIBE_SCENE
-      - `LeftMicrogestureTapThumb`   → READ_TEXT
-      - `RightMicrogestureSwipeRight`→ TOGGLE_DETECTION
-      - `RightMicrogestureSwipeLeft` → REPEAT_LAST
-    - Testes JUnit: cada bit resolve a ação certa; bits desconhecidos → null;
-      bitmask combinada prioriza uma ação (definir ordem determinística).
-    - _Requisitos: novo R9 (ver requirements.md)_
-  - [ ] 9.2 `GestureInputController` (ponte com o SDK)
-    - Registra listener no `MicrogesturesSystem.addListener { state, isFist -> }`
-      (obtido via `systemManager`); traduz com `GestureActionMapper`; invoca o
-      callback de ação na Activity. Guarda o `MicrogestureListenerHandle` e
-      remove no `onDestroy`.
-    - Garantir que hand tracking está habilitado (já há meta-data no manifest).
+  painel (precisam de visão para mirar). Os botões do painel continuam para
+  depuração; a via de uso real é por controle físico (feito) e microgestures
+  (pendente). Estratégia: validar primeiro por botões (mais confiável), depois
+  migrar o mesmo fluxo para microgestures.
+  - [x] 9.1 `AppAction` + `ButtonActionMapper` (lógica pura, testável)
+    - Enum `AppAction` (DESCRIBE_SCENE, READ_TEXT, TOGGLE_DETECTION, REPEAT_LAST,
+      TUTORIAL, CLOSE_APP). Mapper puro bit→ação, 7 testes JUnit. A mesma base
+      serve para microgestures depois.
     - _Requisitos: R9_
-  - [ ] 9.3 Integração na Activity + feedback por voz de confirmação
-    - Cada ação dispara a função já existente (describeScene, readText, toggle)
-      e fala uma confirmação curta ("Descrevendo a cena...", "Procurando
-      texto...", "Detecção ligada/desligada").
-    - REPEAT_LAST: guardar a última frase falada e repetir.
+  - [ ] 9.2 `GestureInputController` (microgestures) — PENDENTE
+    - Registrar listener no `MicrogesturesSystem.addListener { state, isFist -> }`;
+      traduzir com um `GestureActionMapper` análogo; remover no `onDestroy`.
+    - _Requisitos: R9_
+  - [x] 9.3 Integração na Activity + confirmação por voz
+    - `ButtonInputSystem` (SystemBase, edge detection via `Controller.buttonState`)
+      → `runAction()`. Confirmação falada por ação; REPEAT_LAST guarda a última
+      fala (OCR/descrição/toggle). VALIDADO no device.
     - _Requisitos: R9, 5.1_
-  - [ ] 9.4 Tutorial de voz na abertura (onboarding acessível)
-    - Ao abrir o app (após TTS pronto), narrar os gestos disponíveis uma vez.
-      Texto curto e objetivo. Opção de desligar em Settings (`onboardingSpoken`).
+  - [x] 9.4 Tutorial de voz interativo (onboarding acessível)
+    - Modo tutorial: cada botão só ANUNCIA sua função (não executa) até praticar
+      todos. Fala como locução única pausada (contorna a fila curta). Durante o
+      tutorial, detecções são silenciadas. Roda só na 1ª abertura
+      (`onboardingDone`); depois, dica curta. Rechamável pelo clique do analógico
+      esquerdo e por botão "Ouvir tutorial" em Ajustes. VALIDADO no device.
     - _Requisitos: R9_
-  - [ ] 9.5 (Opcional) Botões físicos do controle como via alternativa
-    - Ler `Controller.buttonState`/`changedButtons` no `onInput`; gatilho direito
-      → DESCRIBE_SCENE; gatilho esquerdo → READ_TEXT. Para quem segura o controle.
+  - [x] 9.5 Botões físicos do controle (via principal atual)
+    - A→descrever · X→ler texto · B→liga/desliga detecção · Y→repetir ·
+      analógico esq.→tutorial · analógico dir.→fechar (confirmação dupla).
+      Gatilhos evitados (conflitam com seleção de UI). VALIDADO no device.
     - _Requisitos: R9_
-  - [ ] 9.6 Validação no device: fazer cada gesto, confirmar ação + voz
-    - Verificar falsos positivos; ajustar quais gestos usar se necessário.
+  - [x] 9.5b HUD de acionamento no painel
+    - Topo do painel mostra "Botão X → Ação" a cada acionamento (feedback visual
+      imediato, independente do TTS). VALIDADO no device.
+  - [ ] 9.6 Migrar o fluxo para microgestures e validar no device — PENDENTE
     - _Requisitos: R9_

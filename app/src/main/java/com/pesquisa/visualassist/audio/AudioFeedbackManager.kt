@@ -29,13 +29,29 @@ class AudioFeedbackManager(
 
   fun setVerbosity(v: Verbosity) = queue.setVerbosity(v)
 
+  /** Quando true, anúncios de detecção são silenciados (ex.: modo tutorial). */
+  @Volatile var detectionsMuted: Boolean = false
+
   /** Fala uma mensagem livre (ex.: permissão). Prioridade alta, sem expirar. */
   fun announce(message: String, priority: AudioPriority = AudioPriority.HIGH) {
     enqueue(Announcement(message, priority = priority, ttlMs = null))
   }
 
+  /**
+   * Fala uma sequência de frases como UMA locução (um único item na fila, para
+   * não ser descartada pelo limite curto da fila). As frases são unidas com
+   * pausas para a leitura não ficar corrida. Usado pelo tutorial (Tarefa 9.4).
+   */
+  fun announceSequence(frases: List<String>, priority: AudioPriority = AudioPriority.HIGH) {
+    if (frases.isEmpty()) return
+    // "... " entre frases induz pausa no TTS; ponto final garante entonação.
+    val texto = frases.joinToString("  ...  ") { it.trimEnd('.', ' ') + "." }
+    enqueue(Announcement(texto, priority = priority, ttlMs = null))
+  }
+
   /** Converte detecções em anúncios, priorizando relevância (Requisitos 2.3, 4.1). */
   fun report(detections: List<Detection>) {
+    if (detectionsMuted) return  // silenciado (ex.: durante o tutorial)
     if (detections.isEmpty()) return
 
     // Relevância = combina confiança, proximidade (área da box) e centralidade.

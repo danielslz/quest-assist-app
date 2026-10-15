@@ -53,9 +53,11 @@ fun DebugPanel(
   onUp: () -> Unit = {},
   onDown: () -> Unit = {},
   onCenter: () -> Unit = {},
+  onTutorial: () -> Unit = {},
 ) {
   val camera = DebugFrameState.cameraFrame
   val detections = DebugFrameState.detections
+  val lastAction = DebugFrameState.lastActionLabel
   val s = settings.current
   var showSettings by remember { mutableStateOf(false) }
 
@@ -68,6 +70,16 @@ fun DebugPanel(
     modifier = Modifier.fillMaxSize().background(Color(0xCC000000)).padding(6.dp),
     verticalArrangement = Arrangement.spacedBy(4.dp),
   ) {
+    // --- HUD: último acionamento (botão → ação) ---
+    if (lastAction != null) {
+      Text(
+        text = lastAction,
+        color = Color(0xFF8CE0FF),
+        modifier = Modifier.fillMaxWidth()
+          .background(Color(0x66000000))
+          .padding(horizontal = 8.dp, vertical = 4.dp),
+      )
+    }
     // --- PREVIEW (ocupa o espaço restante) ---
     Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
       if (composed != null) {
@@ -88,6 +100,10 @@ fun DebugPanel(
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         verticalArrangement = Arrangement.spacedBy(3.dp),
       ) {
+        // Ajuda: rechamar o tutorial de uso (acessibilidade).
+        Button(onClick = onTutorial, contentPadding = pad) {
+          Text("🔊 Ouvir tutorial", fontSize = 12.sp)
+        }
         // Verbosidade + detecção
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
           Text("Voz:", color = Color.White, fontSize = 12.sp)
