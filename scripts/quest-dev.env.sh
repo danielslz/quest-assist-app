@@ -31,7 +31,9 @@ export PATH="$META_SPATIAL_EDITOR_CLI_DIR:$PATH"
 #   adb connect <IP_DO_QUEST>:5555
 
 # Aviso visual ao entrar
-echo "[quest-dev] Ambiente Meta Quest carregado:"
+_box="${CONTAINER_ID:-quest-dev}"
+echo "[$_box] Ambiente Meta Quest carregado:"
 echo "  JAVA_HOME     = $(mise where java 2>/dev/null || echo 'via mise')"
 echo "  ANDROID_HOME  = $ANDROID_HOME"
 echo "  ANDROID_NDK   = $ANDROID_NDK_HOME"
+unset _box
