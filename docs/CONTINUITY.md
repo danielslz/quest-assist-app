@@ -19,14 +19,23 @@ ponto exato onde o desenvolvimento parou.
 
 ## 2. Ambiente de build (Aurora Linux imutável + distroboxes)
 Host é Aurora Linux (uBlue, imutável): toolchain NÃO é instalada no host, e sim
-em distroboxes. Em uma máquina nova, recriar duas distroboxes:
+em distroboxes. Em uma máquina nova, **recriar com os scripts de bootstrap**
+(reproduzíveis, idempotentes — ver `scripts/README.md`):
+```bash
+bash scripts/bootstrap-quest-dev.sh    # build Android
+bash scripts/bootstrap-quest-ml.sh     # ML/slides (opcional)
+```
+Passos manuais que o bootstrap não cobre (download/licença fechados): o Meta
+Spatial Editor CLI e os modelos não versionados (ver `scripts/README.md` e o
+README principal).
 
-- **`quest-dev`** — build Android. Toolchain carregada ao entrar via `bash -lc`:
-  JDK 17, Kotlin 2.1.0, Gradle 9.4.1 (wrapper), Android SDK em `~/Android/Sdk`,
-  NDK `27.0.12077973`, `META_SPATIAL_EDITOR_CLI_PATH`. O script de ambiente fica
-  em `~/.config/quest-dev/env.sh` (fora do repo — recriar se trocar de máquina).
-- **`quest-ml`** — Python/venv em `~/Projetos/quest-ml/.venv` (ONNX, ultralytics,
-  OpenCV, PyTorch CUDA, python-pptx). Usada para modelos e geração de slides, NÃO
+Resumo do que cada box contém:
+- **`quest-dev`** — build Android. Ambiente em `~/.config/quest-dev/env.sh`
+  (versionado em `scripts/quest-dev.env.sh`): JDK 17, Kotlin, Gradle (o build usa
+  o WRAPPER 9.4.1 + Kotlin 2.1.0 do projeto), Android SDK em `~/Android/Sdk`,
+  NDK `27.0.12077973`, `META_SPATIAL_EDITOR_CLI_PATH`.
+- **`quest-ml`** — Python/venv em `~/Projetos/quest-ml/.venv` (deps em
+  `scripts/quest-ml-requirements.txt`). Para modelos e geração de slides, NÃO
   para buildar o app.
 
 Comandos canônicos em `.kiro/steering/build.md`. Regra: `adb` roda no HOST;
