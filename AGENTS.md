@@ -24,7 +24,26 @@ Auxilia pessoas com deficiência visual: câmera de passthrough → visão compu
 - Privacidade: sem persistir frames; detecção de pessoas só de presença (LGPD).
 - Não rebaixe as versões fixadas do toolchain/SDK.
 
-## Estado atual
-- Núcleo validado no Quest 3: passthrough + câmera + detecção de objetos + voz pt-BR + painel de debug.
-- Tarefas concluídas: 1–4 (base, Activity, câmera, áudio/TTS), 5.1–5.2 (pipeline, objetos).
-- Próximas: 5.3 OCR, 5.4 pessoas, 4.2 áudio espacial, 6 cloud, 7 configurações.
+## Estado atual (2026-10-21)
+Núcleo validado no Quest 3 (Horizon OS v207): passthrough + câmera + detecção de
+objetos (voz pt-BR) + OCR sob demanda + descrição de cena via LLM + painel de
+debug + controle acessível por botões.
+
+Concluído:
+- 1–4: base, Activity/permissões, câmera (Passthrough Camera API), áudio + TTS
+  offline (sherpa-onnx pt-BR).
+- 5.1–5.2: pipeline de visão, detecção de objetos (MediaPipe EfficientDet-Lite0).
+- 5.3: OCR sob demanda (ML Kit).
+- 6: descrição de cena via LLM multimodal (OpenAI-compat; protótipo SmolVLM via
+  Ramalama; tradução EN→PT offline; fallback on-device).
+- 7: configurações (verbosidade, limiar, on/off detecção, cloud opt-in).
+- 9 (parcial): controle acessível por BOTÕES do controle + tutorial interativo
+  falado + HUD. Validado no device.
+
+Próximas:
+- 9.2/9.6: migrar o acionamento para MICROGESTURES (toque/deslize do polegar via
+  `MicrogesturesSystem`/`MicrogestureBits`), reusando `input/AppAction` e o
+  `runAction` já prontos. Botões permanecem como alternativa.
+- 5.4: detecção dedicada de pessoas (presença). 4.2: áudio espacial. 8: empacotamento.
+
+Ver `docs/CONTINUITY.md` para setup de ambiente, Ramalama e teste no device.

@@ -39,6 +39,8 @@ Planejadas ⏳
 
 ## Documentação
 - **Técnica (arquitetura, tecnologias, roadmap)**: [`docs/TECHNICAL.md`](docs/TECHNICAL.md)
+- **Continuidade (retomar em outra máquina / Kiro IDE)**: [`docs/CONTINUITY.md`](docs/CONTINUITY.md)
+- **Para agentes de IA**: [`AGENTS.md`](AGENTS.md)
 - Specs: [`.kiro/specs/visual-assist/`](.kiro/specs/visual-assist/) (requirements, design, tasks)
 - Ambiente/convenções/build: [`.kiro/steering/`](.kiro/steering/)
 
@@ -76,8 +78,10 @@ de pessoas será apenas de presença (sem identificação) — conforme LGPD e p
 de dados da Meta.
 
 ## Estado
-Núcleo funcional validado no Quest 3: câmera → detecção → voz. Detalhes e
-próximos passos em `docs/TECHNICAL.md`.
+Validado no Quest 3: câmera (passthrough) → detecção de objetos, OCR e descrição
+de cena via LLM → voz pt-BR; controle acessível por botões do controle com
+tutorial falado. Próximo: acionamento por microgestures. Detalhes e roadmap em
+`docs/TECHNICAL.md`; retomada do desenvolvimento em `docs/CONTINUITY.md`.
 
 ## Licença
 Distribuído sob a licença **MIT** — veja [`LICENSE`](LICENSE). Você pode usar,
