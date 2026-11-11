@@ -33,6 +33,14 @@
     - _Requisitos: 5.2_
   - [x] 4.3 Testes unitários da fila e do debounce
     - _Requisitos: 5.4_
+  - [ ] 4.4 Reduzir a latência da fala inicial (PRÓXIMA SEMANA)
+    - Medido no Quest (logs `TTS pronto ... carga=` e `fala: N caracteres, síntese=`):
+      carga do modelo de voz 1,9–2,9 s (varia) + 1ª frase de 52 caracteres levou
+      1,34 s para sintetizar (~25 ms/caractere; frase de 84 caracteres: 1,7 s).
+      Total até o 1º áudio ≈ 3,5–4,5 s após o lançamento.
+    - Ideias: frase inicial bem mais curta; sintetizar por frases (tocar a 1ª
+      enquanto sintetiza as seguintes); avaliar `numThreads` do modelo.
+    - _Requisitos: 5.1_
 
 - [ ] 5. Pipeline de visão (on-device)
   - [x] 5.1 Definir `VisionDetector`, `CameraFrame`, `Detection` e `VisionPipeline`
@@ -55,6 +63,24 @@
       verbosidade MINIMAL. VALIDADO no device (comportamento); o limiar de
       proximidade `NEAR_HEIGHT=0.6` é heurístico e NÃO foi calibrado com distâncias.
     - _Requisitos: 4.1, 4.2, 4.3_
+  - [ ] 5.5 Distinguir o próprio braço/mão de pessoas reais (PRÓXIMA SEMANA)
+    - Problema (validado no device): o COCO "person" detecta o braço/mão do usuário
+      como "pessoa à esquerda/direita". Sessão de 11/11: 12 detecções, todas durante
+      o teste só com os braços; 9 com confiança 0,61–0,81 e caixas altas coladas nas
+      bordas. Filtros por confiança e por geometria (topo da caixa, borda inferior)
+      NÃO separam — tentativa descartada e removida; fica só o log
+      `pessoa conf=... box=[...] altura=...` (ObjectDetector) para diagnóstico.
+    - Recomendado (decisão do usuário pendente): para caixas "grandes" (perto),
+      exigir um rosto via MediaPipe BlazeFace (~230 KB); pessoas pequenas (longe)
+      seguem sem exigir. Limitações: quem está muito perto e de costas não é
+      anunciado; o app passa a DETECTAR rostos (só presença, sem identificar nem
+      guardar) → atualizar README/PRIVACY; exige baixar o modelo.
+    - Alternativas: pose landmarks (~5 MB, mais pesado); máscara pelas mãos via hand
+      tracking (sem API de juntas clara no SDK e o app não guarda a pose da câmera);
+      aceitar a limitação (mata o aviso de "pessoa próxima").
+    - Antes de implementar: captura ROTULADA (bloco só com braços; bloco só com outra
+      pessoa a ~1 m, 2 m e 3 m) para medir quanto a regra realmente separa.
+    - _Requisitos: 4.1, 4.2_
 
 - [x] 6. Descrição de cena via cloud (opcional)
   - [x] 6.1 `CloudSceneDescriber` com consentimento e detecção de conectividade

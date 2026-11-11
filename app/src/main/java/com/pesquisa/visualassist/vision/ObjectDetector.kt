@@ -60,14 +60,28 @@ class ObjectDetector(
       // A classe COCO "person" vira Kind.PERSON: o áudio a trata como presença
       // (contagem, lado, proximidade), sem segundo modelo e sem rosto/identidade.
       val isPerson = cat.categoryName().equals("person", ignoreCase = true)
+      val normBox = floatArrayOf(
+        box.left / frame.width, box.top / frame.height,
+        box.right / frame.width, box.bottom / frame.height,
+      )
+      if (isPerson) {
+        // Diagnóstico para a Tarefa 5.5 (braço/mão do próprio usuário detectado como
+        // "pessoa"): só geometria e confiança, nenhum conteúdo de imagem.
+        Log.i(
+          TAG,
+          String.format(
+            java.util.Locale.US,
+            "pessoa conf=%.2f box=[%.2f,%.2f,%.2f,%.2f] altura=%.2f",
+            cat.score(), normBox[0], normBox[1], normBox[2], normBox[3],
+            normBox[3] - normBox[1],
+          ),
+        )
+      }
       out.add(
         Detection(
           label = translateLabel(cat.categoryName()),
           confidence = cat.score(),
-          box = floatArrayOf(
-            box.left / frame.width, box.top / frame.height,
-            box.right / frame.width, box.bottom / frame.height,
-          ),
+          box = normBox,
           direction = direction,
           kind = if (isPerson) Detection.Kind.PERSON else Detection.Kind.OBJECT,
         )

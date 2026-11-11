@@ -6,6 +6,7 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import android.os.SystemClock
 import android.util.Log
 import com.k2fsa.sherpa.onnx.OfflineTts
 import com.k2fsa.sherpa.onnx.OfflineTtsConfig
@@ -48,6 +49,7 @@ class SherpaTtsEngine(
 
   private fun initEngine(assets: AssetManager) {
     try {
+      val tStart = SystemClock.elapsedRealtime()
       val vits = OfflineTtsVitsModelConfig(
         model = "$assetsDir/$modelName",
         tokens = "$assetsDir/$tokensName",
@@ -62,7 +64,8 @@ class SherpaTtsEngine(
       val sampleRate = tts!!.sampleRate()
       track = buildAudioTrack(sampleRate)
       ready = true
-      Log.i(TAG, "TTS pronto (sampleRate=$sampleRate)")
+      // Só tempos (sem texto): mede o custo de carregar o modelo de voz.
+      Log.i(TAG, "TTS pronto (sampleRate=$sampleRate, carga=${SystemClock.elapsedRealtime() - tStart}ms)")
       onReady?.invoke() // reprocessa anúncios enfileirados antes de ficar pronto
     } catch (e: Throwable) {
       Log.e(TAG, "Falha ao inicializar TTS offline. Modelo presente em assets/$assetsDir?", e)
@@ -145,7 +148,14 @@ class SherpaTtsEngine(
     }
     worker.execute {
       try {
+        val tSynth = SystemClock.elapsedRealtime()
         val audio = engine.generate(text = text, sid = 0, speed = 0.82f)
+        // Só tamanhos e tempos (nunca o texto): latência de síntese vs. duração do áudio.
+        Log.i(
+          TAG,
+          "fala: ${text.length} caracteres, síntese=${SystemClock.elapsedRealtime() - tSynth}ms, " +
+            "áudio=${audio.samples.size * 1000L / at.sampleRate}ms",
+        )
         at.setVolume(AudioTrack.getMaxVolume())
         at.play()
         at.write(audio.samples, 0, audio.samples.size, AudioTrack.WRITE_BLOCKING)

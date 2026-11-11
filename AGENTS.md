@@ -47,6 +47,8 @@ Próximas:
 - 9.2/9.6: migrar o acionamento para MICROGESTURES (toque/deslize do polegar via
   `MicrogesturesSystem`/`MicrogestureBits`), reusando `input/AppAction` e o
   `runAction` já prontos. Botões permanecem como alternativa.
+- 5.5: distinguir o próprio braço/mão de pessoas reais (decisão pendente; ver tasks.md).
+- 4.4: reduzir a latência da fala inicial (medições em tasks.md).
 - 4.2: áudio espacial (precisa de .wav). 8: empacotamento/publicação. 8.3b: pendências
   de privacidade (tradutor sob demanda, HTTPS).
 

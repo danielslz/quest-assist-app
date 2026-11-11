@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-11-11 (5.4: presença de pessoas, validada no device)
+Última atualização: 2026-11-11 (5.4 presença de pessoas; uso em movimento; pendências 4.4/5.5)
 
 ---
 
@@ -200,6 +200,23 @@ futuro, **microgestures** (pendente), sempre com confirmação por voz.
 - **HUD** no topo do painel mostra o último acionamento (feedback visual).
 - Pendente: migrar o mesmo fluxo para microgestures (`MicrogesturesSystem`).
 
+### 3.10 Uso em movimento (boundaryless)  ✅
+- O app é usado caminhando, então o boundary/Guardian do Quest não deve interrompê-lo.
+  O manifest declara `com.oculus.feature.BOUNDARYLESS_APP` (mecanismo oficial da Meta
+  para apps 6DOF de mixed reality, sem cena imersiva). Confirmado no APK (`aapt`) e
+  no Quest 3: o aviso de saída da área deixou de aparecer.
+- Evitado o truque `adb setprop debug.oculus.guardian_pause` (não suportado; há
+  relato de que também desliga o passthrough).
+- **Segurança (leia):** o modo boundaryless da Meta supõe que o usuário enxerga o
+  ambiente pelo passthrough. O usuário-alvo deste app não enxerga, e o grid do
+  Guardian também é visual, então ele não protegia essa pessoa de qualquer forma.
+  O app é **auxiliar e NÃO substitui** bengala, cão-guia ou acompanhante: a
+  detecção roda a ~1,2 s por ciclo e a fala acrescenta atraso, portanto não é um
+  sistema de segurança em tempo real. Testes em movimento: local conhecido e com
+  acompanhante. Fora do escopo verificado: caminhadas longas e ambientes variados.
+- O painel de debug fica ancorado no mundo (`LOCAL_FLOOR`): ao andar, ele fica para
+  trás. Só afeta quem depura visualmente.
+
 ### 3.8 Ciclo de vida / plataforma  ✅
 - `VisualAssistActivity.kt` — entrada; permissões com feedback por áudio;
   passthrough; painel; saída limpa (`finishApp`).
@@ -288,6 +305,10 @@ Legenda: ✅ implementado · 🟡 parcial · ⏳ planejado
   8.3b). Demais pontos de privacidade e o que não foi verificado: `docs/PRIVACY.md`.
 - **Endpoint de nuvem em HTTP** (`usesCleartextTraffic=true`) no protótipo local;
   não usar fora de uma LAN confiável.
+- **Braço/mão do usuário detectado como "pessoa"** (falso positivo de presença):
+  filtros por confiança/geometria não separam (ver tasks 5.5). Pendente.
+- **Latência da fala inicial** ≈ 3,5–4,5 s após o lançamento (carga do modelo de
+  voz 1,9–2,9 s + síntese da 1ª frase ~1,3 s). Ver tasks 4.4.
 
 > Nota: o acesso de proprietário do Quest foi resolvido (factory reset +
 > reconfiguração com a conta do desenvolvedor). Todas as features estão

@@ -38,6 +38,12 @@ da nuvem. Não há `FileOutputStream`, `MediaStore` nem gravação de bitmap em 
 
 O app não tem contas, analytics próprios, publicidade nem telemetria própria.
 
+**Logs (logcat).** O app escreve no logcat do aparelho, legível por `adb` e não
+persistido pelo app: tempos e tamanhos (carga e síntese do TTS, número de
+caracteres falados, **sem o texto**), geometria e confiança das pessoas detectadas, e
+os **rótulos dos objetos detectados** (ex.: "pessoa, garrafa"). Nunca registra
+imagens, texto de OCR nem descrições do LLM.
+
 ## 3. Modo nuvem (opt-in): o que é enviado
 
 Acontece somente se **todas** as condições forem verdadeiras: nuvem ligada em

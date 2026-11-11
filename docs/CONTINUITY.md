@@ -114,3 +114,8 @@ preservando tema/fonte. Última: `Daniel-15-10-2026.pptx`.
 - TTS precisa de `USAGE_MEDIA` + `ALLOW_CAPTURE_BY_ALL` para ser capturado em
   gravações de tela (áudio de acessibilidade é excluído do mix).
 - scrcpy NÃO grava o render imersivo do Quest; usar a gravação nativa do headset.
+- Boundary/Guardian interrompia o uso em movimento: resolvido com
+  `com.oculus.feature.BOUNDARYLESS_APP` no manifest (ver TECHNICAL 3.10, com ressalva
+  de segurança para usuários que não enxergam).
+- Filtro por confiança/geometria NÃO separa o braço do usuário de uma pessoa real
+  (COCO "person"): não repetir; ver tasks 5.5 e o log `pessoa conf=...`.

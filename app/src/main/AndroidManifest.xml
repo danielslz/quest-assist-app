@@ -24,6 +24,12 @@
   <!-- Passthrough é pré-requisito da Passthrough Camera API -->
   <uses-feature android:name="com.oculus.feature.PASSTHROUGH" android:required="true" />
 
+  <!-- Boundaryless: o app é usado em movimento (caminhada) em mixed reality, então
+       o boundary/Guardian não deve interromper a experiência. Mecanismo oficial da
+       Meta (apps 6DOF, sem cena imersiva). Considerações de segurança em
+       docs/TECHNICAL.md, "Uso em movimento". -->
+  <uses-feature android:name="com.oculus.feature.BOUNDARYLESS_APP" android:required="true" />
+
   <!-- Acesso às câmeras frontais (Passthrough Camera API).
        CAMERA dá acesso a passthrough + avatar; HEADSET_CAMERA só passthrough. -->
   <uses-permission android:name="android.permission.CAMERA" />
