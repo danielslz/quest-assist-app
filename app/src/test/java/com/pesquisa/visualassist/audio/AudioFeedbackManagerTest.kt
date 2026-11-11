@@ -74,4 +74,68 @@ class AudioFeedbackManagerTest {
     engine.becomeReady()
     assertEquals(listOf("Assistente visual iniciado."), engine.spoken)
   }
+
+  // --- Presença de pessoas (Tarefa 5.4) ---
+
+  private fun person(dir: Direction, h: Float = 0.3f) = Detection(
+    "pessoa", 0.9f, floatArrayOf(0.4f, 0f, 0.6f, h), dir, Detection.Kind.PERSON,
+  )
+
+  @Test
+  fun duasPessoasEmLadosDiferentes_viramUmaFalaSo() {
+    val engine = FakeEngine()
+    val mgr = AudioFeedbackManager(engine)
+    mgr.report(listOf(person(Direction.LEFT), person(Direction.RIGHT)))
+    assertEquals(listOf("Duas pessoas: uma à esquerda e uma à direita"), engine.spoken)
+  }
+
+  @Test
+  fun pessoaNaoRepeteEnquantoNaoMuda() {
+    var now = 0L
+    val engine = FakeEngine()
+    val mgr = AudioFeedbackManager(engine, clock = { now })
+    mgr.report(listOf(person(Direction.CENTER)))
+    now += 1200; mgr.report(listOf(person(Direction.CENTER)))
+    now += 1200; mgr.report(listOf(person(Direction.CENTER)))
+    assertEquals(listOf("Pessoa à sua frente"), engine.spoken)
+  }
+
+  @Test
+  fun pessoaQueSeAproxima_ehAnunciadaMesmoDentroDoDebounce() {
+    var now = 0L
+    val engine = FakeEngine()
+    val mgr = AudioFeedbackManager(engine, clock = { now })
+    mgr.report(listOf(person(Direction.CENTER, h = 0.3f)))
+    now += 1200 // bem abaixo dos 3 s de debounce da fila
+    mgr.report(listOf(person(Direction.CENTER, h = 0.8f)))
+    assertEquals(listOf("Pessoa à sua frente", "Pessoa próxima à sua frente"), engine.spoken)
+  }
+
+  @Test
+  fun pessoaEhFaladaMesmoNaVerbosidadeMinima() {
+    val engine = FakeEngine()
+    val mgr = AudioFeedbackManager(engine)
+    mgr.setVerbosity(Verbosity.MINIMAL)
+    mgr.report(listOf(person(Direction.LEFT)))
+    assertEquals(listOf("Pessoa à sua esquerda"), engine.spoken)
+  }
+
+  @Test
+  fun pessoaSilenciadaDuranteOTutorial() {
+    val engine = FakeEngine()
+    val mgr = AudioFeedbackManager(engine)
+    mgr.detectionsMuted = true
+    mgr.report(listOf(person(Direction.CENTER)))
+    assertTrue(engine.spoken.isEmpty())
+  }
+
+  @Test
+  fun pessoaEObjeto_naMesmaLeitura() {
+    val engine = FakeEngine()
+    val mgr = AudioFeedbackManager(engine)
+    val cadeira = Detection("cadeira", 0.9f, box(), Direction.LEFT, Detection.Kind.OBJECT)
+    mgr.report(listOf(person(Direction.CENTER), cadeira))
+    // Pessoa tem prioridade alta: fala antes do objeto.
+    assertEquals(listOf("Pessoa à sua frente", "cadeira à sua esquerda"), engine.spoken)
+  }
 }

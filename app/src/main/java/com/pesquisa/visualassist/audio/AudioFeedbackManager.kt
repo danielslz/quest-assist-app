@@ -2,6 +2,7 @@ package com.pesquisa.visualassist.audio
 
 import com.pesquisa.visualassist.vision.Detection
 import com.pesquisa.visualassist.vision.Direction
+import com.pesquisa.visualassist.vision.PersonPresenceTracker
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -14,6 +15,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 class AudioFeedbackManager(
   private val engine: SpeechEngine,
   debounceMs: Long = 3000L,
+  /** Decide quando falar a presença de pessoas (contagem, lado, proximidade). */
+  private val personTracker: PersonPresenceTracker = PersonPresenceTracker(),
+  private val clock: () -> Long = { System.currentTimeMillis() },
 ) {
   private val queue = AnnouncementQueue(debounceMs)
   private val speaking = AtomicBoolean(false)
@@ -64,20 +68,35 @@ class AudioFeedbackManager(
       return d.confidence * 0.5f + area * 0.3f + centrality * 0.2f
     }
 
-    // Pessoas são sempre relevantes (segurança/social); depois, os objetos mais relevantes.
+    // Pessoas: o tracker resume (contagem/lado/proximidade) e decide quando falar;
+    // objetos: no máximo 1 por ciclo, o mais relevante.
     val people = detections.filter { it.kind == Detection.Kind.PERSON }
     val objects = detections.filter { it.kind != Detection.Kind.PERSON }
       .sortedByDescending { relevance(it) }
       .take(1) // no máximo 1 objeto por ciclo (fala menos)
 
-    (people + objects).forEach { d ->
+    personTracker.update(people, clock())?.let { p ->
+      enqueue(
+        Announcement(
+          text = p.text,
+          priority = AudioPriority.HIGH,
+          direction = p.direction.toAudioDirection(),
+          // Sem dedupeKey: quem evita repetição é o tracker. O debounce da fila
+          // descartaria uma mudança real de situação (ex.: pessoa se aproximou).
+          minVerbosity = Verbosity.MINIMAL, // segurança: fala até no modo mínimo
+          ttlMs = 3000L,
+        )
+      )
+    }
+
+    objects.forEach { d ->
       enqueue(
         Announcement(
           text = phraseFor(d),
-          priority = if (d.kind == Detection.Kind.PERSON) AudioPriority.HIGH else AudioPriority.NORMAL,
+          priority = AudioPriority.NORMAL,
           direction = d.direction.toAudioDirection(),
           dedupeKey = d.label,
-          minVerbosity = if (d.kind == Detection.Kind.OBJECT) Verbosity.NORMAL else Verbosity.MINIMAL,
+          minVerbosity = Verbosity.NORMAL,
           ttlMs = 1800L, // menor atraso: detecção obsoleta após 1.8s não é falada
         )
       )

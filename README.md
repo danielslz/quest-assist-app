@@ -14,6 +14,9 @@ Implementadas ✅
 - **Passthrough + câmera frontal** (Passthrough Camera API, 1280×960, intrínsecos da lente)
 - **Detecção de objetos** on-device (MediaPipe EfficientDet-Lite0) com posição
   relativa ("cadeira à sua esquerda") e rótulos em português
+- **Presença de pessoas**: anuncia quantas e de que lado ("Duas pessoas: uma à
+  esquerda e uma à direita"), avisa quando uma está **próxima**, e não repete
+  enquanto nada muda — só presença, sem identificar ninguém
 - **Leitura de texto (OCR)** sob demanda (ML Kit) — botão "Ler texto" lê placas,
   letreiros e rótulos por voz
 - **Descrição de cena** sob demanda via LLM multimodal (opt-in): botão "Descrever"
@@ -34,7 +37,7 @@ Implementadas ✅
 Planejadas ⏳
 - **Microgestures** (toque/deslize do polegar) reaproveitando o fluxo de ações já
   pronto — alternativa sem controle ao acionamento por botões.
-- Detecção de pessoas dedicada (presença), áudio espacial, empacotamento/publicação.
+- Áudio espacial (beep direcional) e empacotamento/publicação.
   Ver roadmap em `docs/TECHNICAL.md`.
 
 ## Documentação
@@ -74,7 +77,7 @@ distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradl
   baixe do MediaPipe (object_detector/efficientdet_lite0).
 
 ## Privacidade
-Imagens da câmera não são persistidas; detecção de pessoas será apenas de
+Imagens da câmera não são persistidas; a detecção de pessoas é apenas de
 presença (sem identificação) — conforme LGPD e política de dados da Meta.
 
 O núcleo (objetos, OCR, voz) roda no headset, sem enviar imagens. O envio de um

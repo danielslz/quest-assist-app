@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-10-21 (8.3: documento de privacidade e dados que saem do dispositivo)
+Última atualização: 2026-11-11 (5.4: presença de pessoas, validada no device)
 
 ---
 
@@ -105,6 +105,21 @@ direcionais). Todo o processamento essencial é **offline** e **privado**.
 - `vision/VisionPipeline.kt` — orquestra detectores em coroutine, com throttle
   de inferência (~1.2s) e drop de frames antigos (sem busy-loop).
 - `vision/Models.kt` — `CameraFrame`, `Detection`, `Direction`.
+
+#### Presença de pessoas (5.4)  ✅
+- A classe COCO `person` do `ObjectDetector` vira `Detection.Kind.PERSON`. Não há
+  segundo modelo nem processamento de rosto: só presença (Req. 4.2/4.3).
+- `vision/PersonPresence.kt` — `PersonPresenceTracker` (**puro, 16 testes**):
+  resume contagem por lado + proximidade e decide quando falar. Frases como
+  "Pessoa à sua frente", "Pessoa próxima à sua direita", "Duas pessoas: uma à
+  esquerda e uma à direita".
+- Regras: 1ª aparição e pessoa que fica **próxima** → imediato; demais mudanças
+  → após 2 ciclos iguais (ignora o piscar da detecção); sem mudança → silêncio;
+  4 s sem ver ninguém → esquece e reanuncia. Fala também em verbosidade MINIMAL.
+- `AudioFeedbackManager.report` usa o tracker para pessoas; sem `dedupeKey`, pois
+  o debounce da fila descartaria uma mudança real (ex.: pessoa se aproximou).
+- **Limitação:** "próxima" = altura da caixa ≥ 60% do frame (`NEAR_HEIGHT`),
+  heurística **não calibrada** com distâncias reais.
 
 ### 3.3 Feedback por áudio  ✅
 - `audio/SherpaTtsEngine.kt` — TTS **offline** com sherpa-onnx (modelo VITS/Piper
@@ -222,7 +237,8 @@ futuro, **microgestures** (pendente), sempre com confirmação por voz.
 ## 5. Privacidade e conformidade (LGPD / política Meta)
 - Imagens da câmera são tratadas como Device User Data (política Meta).
 - **Nenhum frame é persistido** em disco.
-- Detecção de pessoas será apenas de **presença** — sem identificação de indivíduos.
+- Detecção de pessoas é apenas de **presença** — sem identificação de indivíduos
+  e sem processar rostos (usa a classe "person" do detector de objetos).
 - O app funciona **100% offline** no modo padrão; o modo cloud (roadmap) será
   opt-in explícito.
 
@@ -240,7 +256,7 @@ futuro, **microgestures** (pendente), sempre com confirmação por voz.
 | 5.2 | ObjectDetector (MediaPipe) | ✅ | objetos + direção + pt |
 | — | Painel de debug (boxes) | ✅ | validação visual |
 | 5.3 | OCR (ML Kit) | ✅ | ler placas/letreiros sob demanda (botão) |
-| 5.4 | **Detecção de pessoas dedicada** | ⏳ | presença (sem identificação) |
+| 5.4 | Presença de pessoas | ✅ | classe COCO person + tracker (contagem/lado/proximidade); sem identificação |
 | 4.2 | **Áudio espacial (beep direcional)** | ⏳ | requer asset .wav mono 48kHz |
 | 6 | Descrição de cena via LLM | ✅ | OpenAI-compat; fallback offline; tradução pt; SmolVLM/Ramalama |
 | 7 | Configurações | ✅ | verbosidade, limiar, on/off (painel); cloud OFF default |
@@ -291,11 +307,11 @@ Lógica pura coberta por JUnit (rodar na `quest-dev`):
 ```bash
 distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradlew :app:testDebugUnitTest'
 ```
-Cobertura atual (40 testes): `ResolutionPolicy`, `DirectionMapper`,
+Cobertura atual (62 testes): `ResolutionPolicy`, `DirectionMapper`,
 `AnnouncementQueue` (prioridade, debounce, TTL, fila cheia),
-`AudioFeedbackManager` (fluxo serial), `Settings` (defaults/validação),
+`AudioFeedbackManager` (fluxo serial, presença de pessoas), `Settings` (defaults/validação),
 `SceneDescriptionProtocol` (payload/parse), `OnDeviceSceneDescriber` (fallback)
-e `ButtonActionMapper` (bit→ação, acessibilidade).
+`ButtonActionMapper` (bit→ação, acessibilidade) e `PersonPresenceTracker` (presença).
 
 ## 9. Estrutura do código
 ```
@@ -304,7 +320,7 @@ app/src/main/java/com/pesquisa/visualassist/
   camera/    CameraController, CameraEye, ResolutionPolicy, YuvUtils
   vision/    VisionPipeline, ObjectDetector, TextReader (OCR), DirectionMapper,
              Models, OverlayRenderer, DebugFrameState,
-             PersonDetector (stub — Tarefa 5.4)
+             PersonPresence (PersonPresenceTracker, puro)
   audio/     AudioFeedbackManager, AnnouncementQueue, SpeechEngine, SherpaTtsEngine
   settings/  Settings (puro), SettingsStore (persistência + observável)
   cloud/     SceneDescriptionProtocol, CloudSceneDescriber, OnDeviceSceneDescriber,

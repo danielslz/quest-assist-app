@@ -57,6 +57,9 @@ class ObjectDetector(
       if (cat.score() < confidenceThreshold) continue
       val box = d.boundingBox() // RectF em pixels
       val direction = DirectionMapper.fromBox(box.left, box.right, frame.width)
+      // A classe COCO "person" vira Kind.PERSON: o áudio a trata como presença
+      // (contagem, lado, proximidade), sem segundo modelo e sem rosto/identidade.
+      val isPerson = cat.categoryName().equals("person", ignoreCase = true)
       out.add(
         Detection(
           label = translateLabel(cat.categoryName()),
@@ -66,7 +69,7 @@ class ObjectDetector(
             box.right / frame.width, box.bottom / frame.height,
           ),
           direction = direction,
-          kind = Detection.Kind.OBJECT,
+          kind = if (isPerson) Detection.Kind.PERSON else Detection.Kind.OBJECT,
         )
       )
     }

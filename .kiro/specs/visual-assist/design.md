@@ -54,7 +54,9 @@ interface VisionDetector {
 Implementações:
 - `ObjectDetector` — MediaPipe Object Detection ou YOLO(ONNX Runtime Mobile).
 - `TextRecognizer` — ML Kit Text Recognition (OCR, pt/en).
-- `PersonDetector` — MediaPipe Face/Pose Detection (só presença, sem identificação).
+- Presença de pessoas — classe COCO "person" do `ObjectDetector` (`Kind.PERSON`) +
+  `PersonPresenceTracker` (só presença, sem identificação). Decisão (5.4): sem
+  detector de rosto/pose separado — evita 2º modelo e pega pessoas de costas/lado.
 
 `Detection` inclui: rótulo, confiança, bounding box, e posição relativa derivada
 (esquerda/centro/direita, perto/longe) usando intrínsecos + pose.

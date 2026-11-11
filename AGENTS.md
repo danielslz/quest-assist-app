@@ -35,6 +35,7 @@ Concluído:
   offline (sherpa-onnx pt-BR).
 - 5.1–5.2: pipeline de visão, detecção de objetos (MediaPipe EfficientDet-Lite0).
 - 5.3: OCR sob demanda (ML Kit).
+- 5.4: presença de pessoas (`PersonPresenceTracker`, COCO person; sem rosto).
 - 6: descrição de cena via LLM multimodal (OpenAI-compat; protótipo SmolVLM via
   Ramalama; tradução EN→PT offline; fallback on-device).
 - 7: configurações (verbosidade, limiar, on/off detecção, cloud opt-in).
@@ -46,6 +47,7 @@ Próximas:
 - 9.2/9.6: migrar o acionamento para MICROGESTURES (toque/deslize do polegar via
   `MicrogesturesSystem`/`MicrogestureBits`), reusando `input/AppAction` e o
   `runAction` já prontos. Botões permanecem como alternativa.
-- 5.4: detecção dedicada de pessoas (presença). 4.2: áudio espacial. 8: empacotamento.
+- 4.2: áudio espacial (precisa de .wav). 8: empacotamento/publicação. 8.3b: pendências
+  de privacidade (tradutor sob demanda, HTTPS).
 
 Ver `docs/CONTINUITY.md` para setup de ambiente, Ramalama e teste no device.

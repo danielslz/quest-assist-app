@@ -45,8 +45,15 @@
   - [x] 5.3 `TextReader` (OCR) com ML Kit, acionado sob demanda (botão do painel)
     - Leitura via TTS (prioridade alta); "nenhum texto detectado" quando vazio; pt/en (latino)
     - _Requisitos: 3.1, 3.2, 3.3, 3.4_
-  - [ ] 5.4 `PersonDetector` (presença via MediaPipe, sem identificação)
-    - Anúncio de presença/posição; sem persistência de rostos
+  - [x] 5.4 Presença de pessoas (sem identificação)
+    - Reaproveita a classe COCO "person" do EfficientDet (`Kind.PERSON`), sem
+      2º modelo e sem processar rostos; `PersonPresenceTracker` (puro, 16 testes)
+      conta pessoas por lado, estima proximidade pela altura da caixa e só fala
+      quando algo muda. Substitui o stub `PersonDetector` (removido).
+    - Primeira aparição e "pessoa próxima" são imediatas; outras mudanças exigem
+      2 ciclos iguais; esquece o estado após 4 s sem ver ninguém. Fala até em
+      verbosidade MINIMAL. VALIDADO no device (comportamento); o limiar de
+      proximidade `NEAR_HEIGHT=0.6` é heurístico e NÃO foi calibrado com distâncias.
     - _Requisitos: 4.1, 4.2, 4.3_
 
 - [x] 6. Descrição de cena via cloud (opcional)
