@@ -71,8 +71,17 @@
   - [ ] 8.2 Teste manual no headset: latência, conforto, precisão dos anúncios
     - Ajustar FPS de inferência (meta >= 10) e verbosidade
     - _Requisitos: 2.2_
-  - [ ] 8.3 Documentar dados que saem do dispositivo (README de privacidade)
+  - [x] 8.3 Documentar dados que saem do dispositivo (README de privacidade)
+    - `docs/PRIVACY.md`: o que é capturado/onde fica, o que é enviado no modo
+      nuvem, tráfego fora da nuvem (download do modelo de tradução), telemetria
+      do ML Kit e o que NÃO foi verificado (tráfego real não capturado).
     - _Requisitos: 7.3_
+  - [ ] 8.3b Pendências de privacidade levantadas pela 8.3
+    - Criar o `SceneTranslator` só quando a nuvem estiver ativa (hoje é criado
+      em toda abertura e baixa o modelo na 1ª execução, mesmo offline — Req. 7.4).
+    - HTTPS obrigatório fora de LAN (remover `usesCleartextTraffic` na publicação).
+    - Capturar o tráfego do app no Quest para validar o `PRIVACY.md`.
+    - _Requisitos: 7.2, 7.3, 7.4_
 
 - [~] 9. Controle acessível por gestos/botões
   Motivação: o usuário-alvo (deficiente visual) não consegue usar os botões do

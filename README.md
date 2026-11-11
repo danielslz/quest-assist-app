@@ -39,6 +39,7 @@ Planejadas ⏳
 
 ## Documentação
 - **Técnica (arquitetura, tecnologias, roadmap)**: [`docs/TECHNICAL.md`](docs/TECHNICAL.md)
+- **Privacidade (dados que saem do dispositivo)**: [`docs/PRIVACY.md`](docs/PRIVACY.md)
 - **Continuidade (retomar em outra máquina / Kiro IDE)**: [`docs/CONTINUITY.md`](docs/CONTINUITY.md)
 - **Para agentes de IA**: [`AGENTS.md`](AGENTS.md)
 - Specs: [`.kiro/specs/visual-assist/`](.kiro/specs/visual-assist/) (requirements, design, tasks)
@@ -73,9 +74,14 @@ distrobox enter quest-dev -- bash -lc 'cd ~/Projetos/quest-assist-app && ./gradl
   baixe do MediaPipe (object_detector/efficientdet_lite0).
 
 ## Privacidade
-Imagens da câmera não são persistidas; app funciona offline por padrão; detecção
-de pessoas será apenas de presença (sem identificação) — conforme LGPD e política
-de dados da Meta.
+Imagens da câmera não são persistidas; detecção de pessoas será apenas de
+presença (sem identificação) — conforme LGPD e política de dados da Meta.
+
+O núcleo (objetos, OCR, voz) roda no headset, sem enviar imagens. O envio de um
+frame a um endpoint de LLM só acontece com a **nuvem ativada (opt-in)** e quando
+o usuário pede "Descrever". Ressalvas: o modelo de tradução EN→PT é baixado na
+primeira execução (mesmo offline de resto) e o ML Kit pode enviar diagnósticos
+ao Google. Detalhes, limites e pendências em [`docs/PRIVACY.md`](docs/PRIVACY.md).
 
 ## Estado
 Validado no Quest 3: câmera (passthrough) → detecção de objetos, OCR e descrição

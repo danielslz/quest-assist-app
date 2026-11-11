@@ -6,7 +6,7 @@
 >
 > Projeto de pesquisa — Ciência da Computação. Autor: Daniel Lima.
 
-Última atualização: 2026-10-14 (Tarefa 9: controle acessível por botões + tutorial interativo, validado no device)
+Última atualização: 2026-10-21 (8.3: documento de privacidade e dados que saem do dispositivo)
 
 ---
 
@@ -266,6 +266,12 @@ Legenda: ✅ implementado · 🟡 parcial · ⏳ planejado
   Mode) — limitação do launcher; resolvido ao publicar pela loja Meta.
 - Aviso "nome não disponível" ao **sair pelo botão do controle** do Quest
   (comportamento do Nautilus); sair pelo botão do app não dispara.
+- **Primeira execução exige rede** para baixar o modelo de tradução EN→PT (ML Kit),
+  mesmo com a nuvem desligada, pois o `SceneTranslator` é criado na abertura do
+  app. Exceção ao "100% offline por padrão" (Req. 7.4); correção pendente (tasks
+  8.3b). Demais pontos de privacidade e o que não foi verificado: `docs/PRIVACY.md`.
+- **Endpoint de nuvem em HTTP** (`usesCleartextTraffic=true`) no protótipo local;
+  não usar fora de uma LAN confiável.
 
 > Nota: o acesso de proprietário do Quest foi resolvido (factory reset +
 > reconfiguração com a conta do desenvolvedor). Todas as features estão

@@ -6,6 +6,7 @@ Auxilia pessoas com deficiência visual: câmera de passthrough → visão compu
 
 ## Antes de começar, leia
 - `docs/TECHNICAL.md` — arquitetura, funcionalidades, tecnologias e roadmap.
+- `docs/PRIVACY.md` — dados que saem do dispositivo e pendências de privacidade.
 - `.kiro/steering/build.md` — como buildar/testar/deployar e em quais containers.
 - `.kiro/steering/environment.md` — versões fixadas e convenções.
 - `.kiro/steering/maintenance.md` — OBRIGATÓRIO: atualizar doc/README a cada mudança.
@@ -37,6 +38,7 @@ Concluído:
 - 6: descrição de cena via LLM multimodal (OpenAI-compat; protótipo SmolVLM via
   Ramalama; tradução EN→PT offline; fallback on-device).
 - 7: configurações (verbosidade, limiar, on/off detecção, cloud opt-in).
+- 8.3: documento de privacidade (`docs/PRIVACY.md`); pendências em 8.3b.
 - 9 (parcial): controle acessível por BOTÕES do controle + tutorial interativo
   falado + HUD. Validado no device.
 
