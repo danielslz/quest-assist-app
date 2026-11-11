@@ -275,6 +275,7 @@ futuro, **microgestures** (pendente), sempre com confirmação por voz.
 | 5.3 | OCR (ML Kit) | ✅ | ler placas/letreiros sob demanda (botão) |
 | 5.4 | Presença de pessoas | ✅ | classe COCO person + tracker (contagem/lado/proximidade); sem identificação |
 | 4.2 | **Áudio espacial (beep direcional)** | ⏳ | requer asset .wav mono 48kHz |
+| 4.5 | Velocidade da fala ajustável | ⏳ | hoje fixa em 0.82; ajuste por controle + painel |
 | 6 | Descrição de cena via LLM | ✅ | OpenAI-compat; fallback offline; tradução pt; SmolVLM/Ramalama |
 | 7 | Configurações | ✅ | verbosidade, limiar, on/off (painel); cloud OFF default |
 | — | Preview fluido no painel | ✅ | preview ~15fps desacoplado da inferência |

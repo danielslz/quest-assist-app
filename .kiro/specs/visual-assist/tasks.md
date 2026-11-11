@@ -41,6 +41,22 @@
     - Ideias: frase inicial bem mais curta; sintetizar por frases (tocar a 1ª
       enquanto sintetiza as seguintes); avaliar `numThreads` do modelo.
     - _Requisitos: 5.1_
+  - [ ] 4.5 Velocidade da fala ajustável pelo usuário (IDEIA — registrada em 11/11)
+    - Hoje é fixa: `speed = 0.82f` em `SherpaTtsEngine.speak` (veio de feedback do
+      usuário: 1.0 → 0.9 → 0.82, "um pouquinho mais lenta"). Cada pessoa tem um ritmo
+      de escuta e leitores de tela costumam permitir esse ajuste.
+    - Esboço: campo `speechSpeed` em `Settings` (persistido; limites por função pura,
+      como `clampConfidence`; padrão 0.82). `SpeechEngine.speak(text, pan, onDone)` hoje
+      não recebe velocidade, então a interface precisa de um parâmetro/propriedade.
+      Aplicar em runtime via `settings.observe`, como verbosidade e limiar.
+    - Ponto principal (acessibilidade): precisa dar para ajustar SEM enxergar o painel,
+      por exemplo com uma entrada do controle (direções do analógico, ainda livres;
+      a definir) e confirmação falada na nova velocidade, além do controle em Ajustes
+      no painel. Incluir no tutorial e no mapeamento de `AppAction`.
+    - A definir: faixa (ex.: 0.6–1.2), passo, qual entrada, e se vale também para a
+      dica e o tutorial.
+    - Testes: limites/passos (puro) e `Settings` default/validação.
+    - _Requisitos: 5.1, 5.3_
 
 - [ ] 5. Pipeline de visão (on-device)
   - [x] 5.1 Definir `VisionDetector`, `CameraFrame`, `Detection` e `VisionPipeline`
